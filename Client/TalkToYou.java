@@ -7,14 +7,15 @@ class TalkToYou extends Thread {
   private static String closeConnection = ".signoff";
   private static String messageError = "Message not sent. Please try again.";
   private static String quit = "has quit!";
-  public String user;
+  public String[] user;
   public byte outBuf[];
   public int port;
+  public volatile boolean running = true;
   InetAddress ipAddr;
   public DatagramSocket sock;
   Map<String, String> sendList;
   
-  TalkToYou(DatagramSocket s, Map<String, String> clientList, int portnumber, String username) {
+  TalkToYou(DatagramSocket s, Map<String, String> clientList, int portnumber, String[] username) {
     // create a packet buffer to store data from packets received.
     outBuf = new byte[1000];
     port = portnumber;
@@ -24,6 +25,8 @@ class TalkToYou extends Thread {
   }
   
   public void run() {
+    while(running)
+    {
     Scanner inputReader = new Scanner(System.in);
     sendMessage(".notify");
     while( inputReader.hasNextLine() ) {
@@ -51,7 +54,7 @@ class TalkToYou extends Thread {
       else if(message.startsWith(".name "))
       {
         String newUser[] = message.split(" ", 2);
-        user = newUser[1];
+        user[0] = newUser[1];
         System.out.println("Your chatname has been changed."); //May need to update this with server.
         sendMessage(".notify");
       }          
@@ -60,10 +63,11 @@ class TalkToYou extends Thread {
       sendMessage(message);
       }
     }
+    }
   }
   
   public boolean sendMessage(String message){
-    message = user + ": " + message;
+    message = user[0] + ": " + message;
     //Thus, any message without : in it can be a control message.
     outBuf = message.getBytes();
     for(Map.Entry<String, String> key: sendList.entrySet())
