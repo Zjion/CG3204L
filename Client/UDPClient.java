@@ -17,6 +17,7 @@ public class UDPClient {
   DatagramPacket outPkt = null;
   DatagramPacket inPkt = null;
   String userSay = null;
+  Map<String, String> clientList = new HashMap<String, String>();
   int port = 9060;
   //int port = Integer.parseInt(args[1]);
   try {
@@ -38,8 +39,7 @@ public class UDPClient {
   }
   InetAddress addr = InetAddress.getByName(destAddr);
   Scanner input = new Scanner(System.in);
-  
-  TCPComm serverComm = new TCPComm(destAddr);
+  TCPComm serverComm = new TCPComm(destAddr, clientList);
   serverComm.start();
   System.out.print("Welcome! Please enter your username: ");
   String username = input.nextLine();
@@ -53,10 +53,10 @@ public class UDPClient {
   //Send chat room name to server
   
   //Server sends back list of clients currently in chat room, or notification that the room does not exist anymore (all have left.)
-  Map<String,String> clientList = new HashMap<String,String>();
+
   //For testing purposes: This should actually be the server's info
-  clientList.put("192.168.0.110", "b");
-  clientList.put("192.168.0.111", "c");
+clientList.put("192.168.0.110", "b");
+clientList.put("192.168.0.111", "c");
   //An alternative method of doing this is to have the server send a complete list of client usernames and ips, then poll every user for their current room. But this is insane, in a way.
   //Client joins chat room by connecting to all clients associated.
   

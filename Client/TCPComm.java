@@ -13,12 +13,14 @@ class TCPComm extends Thread{
   String inputChatRoom;
   Boolean approved = false;
   Boolean validInput = false;
-  public TCPComm(String IP)
+  Map<String, String> TCPList;
+  public TCPComm(String IP, Map<String, String> clientList)
   {
   try
   {
   ip = InetAddress.getByName(IP);
   socket = new Socket(ip, 80);
+  TCPList = clientList;
   out = new PrintWriter(socket.getOutputStream(), true);
   in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
   }
@@ -109,11 +111,34 @@ class TCPComm extends Thread{
       line=in.readLine();
       if(line.equals("users"))
       {
+        String storeUser="";
+        String storeIP="";
         System.out.println("List of users in "+inputChatRoom+":");
-        int i =0;
+        Boolean isUser = true;
         while((line = in.readLine())!=null)
         {
+           if(line.equals("!EOUC"))
+          {
+            break;
+          }
+          else
+          {
+          if(isUser == true)
+          {
+            System.out.print("User: ");
           System.out.println(line);
+          storeUser = line;
+            isUser = false;
+          }
+          else if(isUser == false)
+          {
+            System.out.print("IP: ");
+            System.out.println(line);
+            storeIP = line;
+            TCPList.put(storeIP, storeUser);
+            isUser = true; //Flipflop them to know which, as these will always be in pairs.
+          }
+          }
         }
         
       }

@@ -18,7 +18,7 @@ class TalkToMe extends Thread {
   }
   
   public void run() {
-    while( !sock.isClosed() ) {
+    while( !sock.isClosed()) {
       //receive reply from others
       try {
         sock.receive(inPkt);

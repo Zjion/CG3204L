@@ -56,8 +56,8 @@ class TCPComm extends Thread{
     System.out.print("Enter password. ");
     password = input.nextLine();
     System.out.println("Connecting to server...");
-    out.println("GET /clientList.txt HTTP/1.1\n");
-    out.println(username+"\n");
+    out.println("GET /clientList.txt HTTP/1.1");
+    out.println(username);
     out.println(password); //Last send to server should not have newline to prevent unlikely bugs
     try
     {
@@ -104,7 +104,8 @@ class TCPComm extends Thread{
       }
     }
      System.out.println("Joining room " + inputChatRoom);
-      out.println(inputChatRoom);
+     out.println("GET /joinRoom HTTP/1.1");
+     out.println(inputChatRoom);
       line=in.readLine();
       if(line.equals("users"))
       {
