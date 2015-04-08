@@ -10,7 +10,9 @@ class TCPComm extends Thread{
   BufferedReader in;
   String username;
   String password;
+  String inputChatRoom;
   Boolean approved = false;
+  Boolean validInput = false;
   public TCPComm(String IP)
   {
   try
@@ -61,18 +63,64 @@ class TCPComm extends Thread{
     {
       System.out.println("Receiving stuff.");
       String line="";
-    while((line = in.readLine())!=null)
+      for(int i=0;i<3;i++)
+      {
+      line = in.readLine(); //Ignore the first two lines and grab status
+      }
+      if(line.equals("invalid"))
+      {
+        System.out.println("Invalid username or password.");
+      }
+      else
+      {
+        System.out.println(line); //Third line was correct, but isn't this just blank? Leave it for now.
+        approved = true;
+        System.out.println("List of chat rooms: ");
+    while((line = in.readLine())!=null) //Processing list of users.
         {
-          if(line.equals("valid"))
-          {
-            System.out.println("Approved!");
-            approved = true;
-          }
-          if(line.equals("EOF"))
+          System.out.println(line);
+          
+          if(line.equals("!EOC"))
           {
             break;
           }
         }
+    System.out.println("List of users: ");
+    while((line = in.readLine())!=null)
+    {
+      System.out.println(line);
+      if(line.equals("!EOU"))
+      {
+        break;
+      }
+    }
+    while(!validInput)
+    {
+      System.out.println("Enter the name of the chat room to join; If it does not exist, one will be created.");
+      inputChatRoom = input.nextLine();
+      if(!inputChatRoom.startsWith("!") && !inputChatRoom.trim().equals(""))
+      {
+        validInput = true;
+      }
+    }
+     System.out.println("Joining room " + inputChatRoom);
+      out.println(inputChatRoom);
+      line=in.readLine();
+      if(line.equals("users"))
+      {
+        System.out.println("List of users in "+inputChatRoom+":");
+        int i =0;
+        while((line = in.readLine())!=null)
+        {
+          System.out.println(line);
+        }
+        
+      }
+      else if(line.equals("newroom"))
+      {
+        System.out.println(inputChatRoom + " is empty.");
+      }
+      }
     }
     catch (Exception e)
     {

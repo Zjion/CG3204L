@@ -81,11 +81,11 @@ class WebServer
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
       
-     requestMessageLine = inFromClient.readLine(); //Blank line.
+     //requestMessageLine = inFromClient.readLine(); //Blank line.
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
-      requestMessageLine = inFromClient.readLine(); //Blank line
+      //requestMessageLine = inFromClient.readLine(); //Blank line
       requestMessageLine = inFromClient.readLine(); //Password
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
@@ -110,29 +110,28 @@ class WebServer
       }  //Expand string for names of users
       totallength+="!EOU\n";
       outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + 10+totallength.length() + "\r\n");
+      outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
       outToClient.writeBytes ("\r\n");
       //outToClient.write(fileInBytes, 0, numOfBytes);
       outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
-      //Here the server should send the list of chat rooms (which are temporary, stored only on server.)
       
-
-//Technically if following HTTP protocol all the stuff here should be phrased in that form, but testing first.
+      requestMessageLine = inFromClient.readLine(); //HTTP request
       requestMessageLine = inFromClient.readLine(); //This is the chat room from the client.
       Boolean foundRoom = false;
+      totallength = ""; //Reset the string
       for(int i=0;i<chatRoomList.size();i++)
       {
         if(chatRoomList.get(i).name.equals(requestMessageLine))
         {
           foundRoom = true;
           chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
-          outToClient.writeBytes("users\n");
+          totallength+="users\n";
           for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
           {
-            outToClient.writeBytes(chatRoomList.get(i).clientList.get(j).getName()+"\n");
-            outToClient.writeBytes(chatRoomList.get(i).clientList.get(j).getIP()+"\n");
+            totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
+            totallength+=chatRoomList.get(i).clientList.get(j).getIP()+"\n";
           }
-          outToClient.writeBytes("!EOUC\n");
+          totallength+="!EOUC\n";
           break;
         }
       }
@@ -140,8 +139,12 @@ class WebServer
       {
         System.out.println("New room created with name " + requestMessageLine + " by " + username);
         chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
-        outToClient.writeBytes("newroom\n");
+        totallength="newroom\n";
       }
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
+      outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
+      outToClient.writeBytes ("\r\n");
+      outToClient.writeBytes (totallength);
       }
       else
       {
