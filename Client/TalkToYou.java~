@@ -1,0 +1,80 @@
+import java.io.*;
+import java.util.*;
+import java.net.*;
+
+class TalkToYou extends Thread {
+  private Thread t;
+  private static String closeConnection = "close";
+  private static String messageError = "Message not sent. Please try again.";
+  private static String quit = "has quit!";
+  public String user;
+  public byte outBuf[];
+  public int port;
+  InetAddress ipAddr;
+  public DatagramSocket sock;
+  List<Client> sendList;
+  
+  TalkToYou(DatagramSocket s, List<Client> clientList, int portnumber, String username) {
+    // create a packet buffer to store data from packets received.
+    outBuf = new byte[1000];
+    port = portnumber;
+    sock = s;
+    user = username;
+    sendList = clientList;
+  }
+  
+  public void run() {
+    Scanner inputReader = new Scanner(System.in);
+    System.out.println(user + ": ");
+    while( inputReader.hasNextLine() ) {
+      String message = inputReader.nextLine();
+      //exit from chatRoom
+      if (message.equals(closeConnection)) {
+        //if (sendMessage(quit)) {
+          try{
+            sock.close();
+            System.out.println(message);
+            break;
+          }
+          catch(Exception e) {
+            e.printStackTrace();
+          }
+       // }
+       // else{
+       //   System.out.println(messageError);
+       //   continue;
+       // }
+      }
+      sendMessage(message);
+      System.out.println(user + ": ");
+    }
+  }
+  
+  public boolean sendMessage(String message){
+    message = user + ": " + message;
+    outBuf = message.getBytes();
+    for(int i=0;i<sendList.size();i++)
+    {
+    //send message to others
+    try {
+      DatagramPacket outPkt = new DatagramPacket(outBuf,
+    outBuf.length, InetAddress.getByName(sendList.get(i).getIP()), port);
+      sock.send(outPkt);
+    }
+    catch(IOException e) {
+      System.out.println("Unable to send packet out!");
+      return false;
+    }
+  }
+    return true;
+  }
+
+  public void start() {
+    System.out.println("Start sending");
+    if (t == null)
+    {
+      t = new Thread(this);
+      t.start();
+    }
+  }
+}

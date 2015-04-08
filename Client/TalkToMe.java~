@@ -1,0 +1,41 @@
+import java.io.*;
+import java.util.*;
+import java.net.*;
+
+class TalkToMe extends Thread {
+  private Thread t;
+  public byte inBuf[];
+  public DatagramPacket inPkt;
+  public DatagramSocket sock;
+  
+  TalkToMe(DatagramSocket s) {
+    // create a packet buffer to store data from packets received.
+    inBuf = new byte[1000];
+    inPkt = new DatagramPacket(inBuf, inBuf.length);
+    sock = s;
+  }
+  
+  public void run() {
+    while( !sock.isClosed() ) {
+      //receive reply from others
+      try {
+        sock.receive(inPkt);
+      }
+      catch (IOException e) {
+        e.printStackTrace();
+      }
+      // convert reply to string
+      String reply = new String(inPkt.getData(), 0, inPkt.getLength());
+      System.out.println(reply);
+    }
+  }
+  
+  public void start() {
+    System.out.println("Start receiving");
+    if (t == null)
+    {
+      t = new Thread(this);
+      t.start();
+    }
+  }
+}

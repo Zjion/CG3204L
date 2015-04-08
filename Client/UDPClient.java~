@@ -39,7 +39,7 @@ public class UDPClient {
   InetAddress addr = InetAddress.getByName(destAddr);
   Scanner input = new Scanner(System.in);
   
-  TCPComm serverComm = new TCPComm(destAddr);
+  TCPComm serverComm = new TCPComm("127.0.0.1");
   serverComm.start();
   System.out.print("Welcome! Please enter your username: ");
   String username = input.nextLine();

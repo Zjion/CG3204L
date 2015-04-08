@@ -13,7 +13,6 @@ class WebServer
    String fileName ="";
    Boolean user= false;
    int lineNo = 0;
-   List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>(); //Stores all chatrooms created on server.
    
 
    // check if a port number is given as the first command line argument
@@ -71,8 +70,6 @@ class WebServer
      //GET requests form most of the requests to server.
      fileName = tokenizedLine.nextToken();
   //A GET request for this should check if Client is permitted to receive this file.
-     System.out.println("Socket: " + connectionSocket.getRemoteSocketAddress());
-      ip = requestMessageLine.split("\\:")[0].substring(1);
      if(fileName.startsWith("/clientList.txt"))
      {
      File file = new File(fileName);
@@ -92,56 +89,11 @@ class WebServer
       if(username.equals("guest") && password.equals("hunter2"))
       {
       //if valid when checked against a file, then: [IF CODE AND FILE READING NOT WRITTEN YET]
-        //Here the server should send the list of users.
-        String totallength="";
-        Client newClient = new Client(username, password, ip); //Valid client, create a object representing it
-      for(int i=0;i<chatRoomList.size();i++)
-      {
-        //Calculate size first for HTTP protocol
-        totallength+=chatRoomList.get(i).name + "\n";
-      } //Expand string for names of chat rooms
-      totallength+="!EOC\n";
-      for(int i=0;i<chatRoomList.size();i++)
-      {
-        for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
-        {
-          totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
-        }
-      }  //Expand string for names of users
-      totallength+="!EOU\n";
       outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + 10+totallength.length() + "\r\n");
+      outToClient.writeBytes ("Content-Length: " + numOfBytes+4 + "\r\n");
       outToClient.writeBytes ("\r\n");
-      //outToClient.write(fileInBytes, 0, numOfBytes);
-      outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
-      //Here the server should send the list of chat rooms (which are temporary, stored only on server.)
-      
-
-//Technically if following HTTP protocol all the stuff here should be phrased in that form, but testing first.
-      requestMessageLine = inFromClient.readLine(); //This is the chat room from the client.
-      Boolean foundRoom = false;
-      for(int i=0;i<chatRoomList.size();i++)
-      {
-        if(chatRoomList.get(i).name.equals(requestMessageLine))
-        {
-          foundRoom = true;
-          chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
-          outToClient.writeBytes("users\n");
-          for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
-          {
-            outToClient.writeBytes(chatRoomList.get(i).clientList.get(j).getName()+"\n");
-            outToClient.writeBytes(chatRoomList.get(i).clientList.get(j).getIP()+"\n");
-          }
-          outToClient.writeBytes("!EOUC\n");
-          break;
-        }
-      }
-      if(foundRoom == false)
-      {
-        System.out.println("New room created with name " + requestMessageLine + " by " + username);
-        chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
-        outToClient.writeBytes("newroom\n");
-      }
+      outToClient.write(fileInBytes, 0, numOfBytes);
+      outToClient.writeBytes ("EOF\n");
       }
       else
       {
@@ -149,7 +101,8 @@ class WebServer
          outToClient.writeBytes ("Content-Length: " + 8 + "\r\n");
          outToClient.writeBytes("invalid\n");
       }
-      
+      System.out.println("Socket: " + connectionSocket.getRemoteSocketAddress());
+      ip = requestMessageLine.split("\\:")[0].substring(1);
             
 
      }
