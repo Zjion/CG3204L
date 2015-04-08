@@ -1,0 +1,93 @@
+import java.io.*;
+import java.util.*;
+import java.net.*;
+
+class TalkToYou extends Thread {
+  private Thread t;
+  private static String closeConnection = ".signoff";
+  private static String messageError = "Message not sent. Please try again.";
+  private static String quit = "has quit!";
+  public String user;
+  public byte outBuf[];
+  public int port;
+  InetAddress ipAddr;
+  public DatagramSocket sock;
+  Map<String, String> sendList;
+  
+  TalkToYou(DatagramSocket s, Map<String, String> clientList, int portnumber, String username) {
+    // create a packet buffer to store data from packets received.
+    outBuf = new byte[1000];
+    port = portnumber;
+    sock = s;
+    user = username;
+    sendList = clientList;
+  }
+  
+  public void run() {
+    Scanner inputReader = new Scanner(System.in);
+    sendMessage(".notify");
+    while( inputReader.hasNextLine() ) {
+      String message = inputReader.nextLine();
+      //exit from chatRoom
+      if (message.equals(closeConnection)) {
+          try{
+            System.out.println("Terminating connection.");
+            sendMessage(".signoff");
+            System.exit(0);
+            break;
+          }
+          catch(Exception e) {
+            e.printStackTrace();
+          }
+      }
+      else if(message.equals(".list"))
+      {
+        System.out.println("Users in this chat room:");
+        for(Map.Entry<String, String> key: sendList.entrySet())
+        {
+          System.out.println(key.getValue());
+        }
+      }
+      else if(message.startsWith(".name "))
+      {
+        String newUser[] = message.split(" ", 2);
+        user = newUser[1];
+        System.out.println("Your chatname has been changed."); //May need to update this with server.
+        sendMessage(".notify");
+      }          
+      else
+      {
+      sendMessage(message);
+      }
+    }
+  }
+  
+  public boolean sendMessage(String message){
+    message = user + ": " + message;
+    //Thus, any message without : in it can be a control message.
+    outBuf = message.getBytes();
+    for(Map.Entry<String, String> key: sendList.entrySet())
+    {
+    //send message to others
+    try {
+      DatagramPacket outPkt = new DatagramPacket(outBuf,
+    outBuf.length, InetAddress.getByName(key.getKey()), port);
+      sock.send(outPkt);
+    }
+    catch(IOException e) {
+      System.out.println("Unable to send packet out!");
+      return false;
+    }
+  }
+    return true;
+  }
+
+  public void start() {
+    System.out.println("Start sending");
+    if (t == null)
+    {
+      t = new Thread(this);
+      t.start();
+    }
+  }
+}
