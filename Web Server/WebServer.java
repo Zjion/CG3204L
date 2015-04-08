@@ -72,7 +72,8 @@ class WebServer
      fileName = tokenizedLine.nextToken();
   //A GET request for this should check if Client is permitted to receive this file.
      System.out.println("Socket: " + connectionSocket.getRemoteSocketAddress());
-      ip = requestMessageLine.split("\\:")[0].substring(1);
+      ip = connectionSocket.getRemoteSocketAddress().toString().split("\\:")[0].substring(1);
+      System.out.println(ip);
      if(fileName.startsWith("/clientList.txt"))
      {
      File file = new File(fileName);
@@ -81,11 +82,9 @@ class WebServer
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
       
-     //requestMessageLine = inFromClient.readLine(); //Blank line.
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
-      //requestMessageLine = inFromClient.readLine(); //Blank line
       requestMessageLine = inFromClient.readLine(); //Password
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
