@@ -18,7 +18,7 @@ public class UDPClient {
   DatagramPacket inPkt = null;
   String userSay = null;
   Map clientList = new HashMap();
-  int port = 9060;
+  int port = 9000;
   //int port = Integer.parseInt(args[1]);
   try {
      peerSock = new DatagramSocket(port);
@@ -39,14 +39,15 @@ public class UDPClient {
   }
   InetAddress addr = InetAddress.getByName(destAddr);
   Scanner input = new Scanner(System.in);
-  //TCPComm serverComm = new TCPComm(destAddr, clientList);
-  //serverComm.start();
   System.out.print("Welcome! Please enter your username: ");
   String[] username={""}; 
   username[0] = input.nextLine();
   System.out.print("Please enter your password: ");
   String password = input.nextLine();
+  TCPComm serverComm = new TCPComm(destAddr, clientList, username[0], password);
+  serverComm.start();
   //Do server syncing and thingamajigging here. If valid:
+  
   System.out.println("List of chat rooms to join will be printed here, as pulled from server.");
   //Server sends list of chat rooms back
   System.out.print("Enter name of chat room to join: ");

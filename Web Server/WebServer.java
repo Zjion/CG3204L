@@ -76,21 +76,24 @@ class WebServer
       System.out.println(ip);
      if(fileName.startsWith("/clientList.txt"))
      {
-     File file = new File(fileName);
+     File file = new File("clientList.txt");
      int numOfBytes = (int) file.length();
-     FileInputStream inFile = new FileInputStream (fileName);
+       FileInputStream inFile = new FileInputStream ("clientList.txt");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
-      
+     BufferedReader reader = new BufferedReader(new FileReader(file));
+     
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
       requestMessageLine = inFromClient.readLine(); //Password
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
-      if(username.equals("guest") && password.equals("hunter2"))
+      
+      if (checkUserPass(username, password, reader))
       {
-      //if valid when checked against a file, then: [IF CODE AND FILE READING NOT WRITTEN YET]
+      //if valid when checked against a file, then: 
+        System.out.println("User: "+username+" authenticated");
         //Here the server should send the list of users.
         String totallength="";
         Client newClient = new Client(username, password, ip); //Valid client, create a object representing it
@@ -208,6 +211,38 @@ class WebServer
    }
 
  }
+ 
+ public static boolean checkUserPass(String username, String password, BufferedReader reader)
+    {
+        try
+        {
+          String currentLine;
+          int index;
+          String user;
+          String pass;
+          while ((currentLine = reader.readLine()) != null)
+          {
+            //User:"username"
+            index = currentLine.lastIndexOf(':');
+            user = currentLine.substring(index+1);
+            if ((currentLine = reader.readLine()) == null) break;
+            if (!user.equals(username)) continue;
+            //Password:"password"
+            index = currentLine.lastIndexOf(':');
+            pass = currentLine.substring(index+1);
+            if (pass.equals(password))
+            {
+              return true;
+            }
+          }
+          return false;
+        }
+        catch(IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+        return false;
+    }
  
  static void addUsersToPage(String filename)
  {

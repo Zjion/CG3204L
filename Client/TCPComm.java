@@ -14,15 +14,17 @@ class TCPComm extends Thread{
   Boolean approved = false;
   Boolean validInput = false;
   Map<String, String> TCPList;
-  public TCPComm(String IP, Map<String, String> clientList)
+  public TCPComm(String IP, Map<String, String> clientList, String user, String pass)
   {
   try
   {
-  ip = InetAddress.getByName(IP);
-  socket = new Socket(ip, 80);
-  TCPList = clientList;
-  out = new PrintWriter(socket.getOutputStream(), true);
-  in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    ip = InetAddress.getByName(IP);
+    socket = new Socket(ip, 9000);
+    TCPList = clientList;
+    out = new PrintWriter(socket.getOutputStream(), true);
+    in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    username = user;
+    password = pass;
   }
   catch (Exception e)
   {
@@ -52,11 +54,7 @@ class TCPComm extends Thread{
   {
     while(approved!=true)
     {
-    System.out.print("Enter username. ");
     Scanner input = new Scanner(System.in);
-    username = input.nextLine();
-    System.out.print("Enter password. ");
-    password = input.nextLine();
     System.out.println("Connecting to server...");
     out.println("GET /clientList.txt HTTP/1.1");
     out.println(username);
@@ -108,7 +106,11 @@ class TCPComm extends Thread{
      System.out.println("Joining room " + inputChatRoom);
      out.println("GET /joinRoom HTTP/1.1");
      out.println(inputChatRoom);
-      line=in.readLine();
+      for(int i=0;i<4;i++)
+      {
+        line = in.readLine(); //Ignore the first two lines and grab status
+        System.out.println(line);
+      }
       if(line.equals("users"))
       {
         String storeUser="";
