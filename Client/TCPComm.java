@@ -13,6 +13,7 @@ class TCPComm extends Thread{
   String inputChatRoom;
   Boolean approved = false;
   Boolean validInput = false;
+  int[] sgn;
   Map<String, String> TCPList;
   public TCPComm(String IP, Map<String, String> clientList, String[] mainUser)
   {
@@ -34,18 +35,16 @@ class TCPComm extends Thread{
   public void run()
   {
     while(!socket.isClosed())
-    {
-      try
+    {try
       {
-        while(in.readLine()!=null)
-        {
-          System.out.println("Response: " + in.readLine());
-        }
+      //Any errant output from server.
+      String line = in.readLine();
+      System.out.println(line);
       }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }  
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
     }
   }
   

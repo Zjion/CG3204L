@@ -88,7 +88,7 @@ class WebServer
      FileInputStream inFile = new FileInputStream ("clientList.txt");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
-     
+     int chatIndex = 0;
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
@@ -133,6 +133,7 @@ class WebServer
         if(chatRoomList.get(i).name.equals(requestMessageLine))
         {
           foundRoom = true;
+          chatIndex = i;
           chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
           totallength+="users"+newLine;
           for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
@@ -147,6 +148,7 @@ class WebServer
       if(foundRoom == false)
       {
         System.out.println("New room created with name " + requestMessageLine + " by " + username);
+        chatIndex = chatRoomList.size(); //1 less than actual size after addition
         chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
         totallength="newroom"+newLine;
       }
@@ -154,6 +156,22 @@ class WebServer
       outToClient.writeBytes ("Content-Length: " + totallength.length()+newLine);
       outToClient.writeBytes (newLine);
       outToClient.writeBytes (totallength);
+      
+      //Wait for client to send back DC signal
+      Boolean disconnect = false;
+      while(disconnect!=true)
+      {
+        try
+        {
+        requestMessageLine = inFromClient.readLine();
+        }
+        catch(IOException e) //Any disconnect indicate signing off.
+        {
+          chatRoomList.get(chatIndex).removeClient(newClient);
+          System.out.println(newClient.getName() + " has signed off.");
+          break;
+        }
+      }
       }
       else
       {
@@ -161,7 +179,6 @@ class WebServer
          outToClient.writeBytes ("Content-Length: " + 8 + newLine);
          outToClient.writeBytes("invalid"+newLine);
       }
-      
             
      }
      

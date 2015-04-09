@@ -192,7 +192,7 @@ class WebServer
       String activeU = ("Active users: "+activeUsers+newLine);
       String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
-      long lengthContent = activeU.length() + file.length() + 9;
+      long lengthContent = activeU.length() + totalU.length() + file.length() + 9;
       System.out.println("Length is: " + lengthContent);
       outToClient.writeBytes ("Content-Length: " + lengthContent + newLine);
       outToClient.writeBytes (newLine);
@@ -238,8 +238,9 @@ class WebServer
         activeUsers+=chatRoomList.get(i).clientList.size();
       }
       String activeU = ("Active users: "+activeUsers+newLine);
+      String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
-     long lengthContent = activeU.length() + file.length() + 9;
+     long lengthContent = activeU.length() + totalU.length() + file.length() + 9;
       System.out.println("Length is: " + lengthContent);
       outToClient.writeBytes ("Content-Length: " + lengthContent + newLine);
       outToClient.writeBytes (newLine);
@@ -250,6 +251,7 @@ class WebServer
         outToClient.writeBytes(lineRead + newLine);
       }
       outToClient.writeBytes(activeU);
+      outToClient.writeBytes(totalU);
       outToClient.writeBytes("</html>"+newLine);
       System.out.println("Appended stuff.");
       System.out.println("Finished sending files.");
