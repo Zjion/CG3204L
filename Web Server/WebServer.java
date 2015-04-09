@@ -15,7 +15,8 @@ class WebServer
    Boolean user= false;
    int lineNo = 0;
    List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>(); //Stores all chatrooms created on server.
-
+   int totalUsers = 0;
+   
    // check if a port number is given as the first command line argument
    // if not argument is given, use port number 80
    int myPort = 80;
@@ -189,6 +190,7 @@ class WebServer
         activeUsers+=chatRoomList.get(i).clientList.size();
       }
       String activeU = ("Active users: "+activeUsers+newLine);
+      String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
       long lengthContent = activeU.length() + file.length() + 9;
       System.out.println("Length is: " + lengthContent);
@@ -212,6 +214,7 @@ class WebServer
       */
       //outToClient.write(fileInBytes, 0, numOfBytes);
       outToClient.writeBytes(activeU);
+      outToClient.writeBytes(totalU);
       outToClient.writeBytes("</html>"+newLine);
       System.out.println("Appended stuff.");
       System.out.println("Finished sending files.");
@@ -267,6 +270,7 @@ class WebServer
        writer.write(password);
        writer.write("\n");
        writer.close();
+       totalUsers++;
      }
      
       //Process info here with known user and password for registration. 
