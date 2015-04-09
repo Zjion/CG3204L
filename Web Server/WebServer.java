@@ -6,6 +6,7 @@ class WebServer
 {
  public static void main (String args[]) throws Exception
   {
+   String newLine = System.getProperty("line.separator");
    String username;
    String password;
    String ip;
@@ -76,9 +77,9 @@ class WebServer
       System.out.println(ip);
      if(fileName.startsWith("/clientList.txt"))
      {
-     File file = new File(fileName);
+     File file = new File("clientList.txt");
      int numOfBytes = (int) file.length();
-     FileInputStream inFile = new FileInputStream (fileName);
+     FileInputStream inFile = new FileInputStream ("clientList.txt");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
       
@@ -97,9 +98,9 @@ class WebServer
       for(int i=0;i<chatRoomList.size();i++)
       {
         //Calculate size first for HTTP protocol
-        totallength+=chatRoomList.get(i).name + "\n";
+        totallength+=chatRoomList.get(i).name + newLine;
       } //Expand string for names of chat rooms
-      totallength+="!EOC\n";
+      totallength+="!EOC" + newLine;
       for(int i=0;i<chatRoomList.size();i++)
       {
         for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
@@ -107,10 +108,10 @@ class WebServer
           totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
         }
       }  //Expand string for names of users
-      totallength+="!EOU\n";
-      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
-      outToClient.writeBytes ("\r\n");
+      totallength+="!EOU" + newLine;
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+      outToClient.writeBytes ("Content-Length: " + totallength.length() + newLine);
+      outToClient.writeBytes (newLine);
       //outToClient.write(fileInBytes, 0, numOfBytes);
       outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
       
@@ -124,13 +125,13 @@ class WebServer
         {
           foundRoom = true;
           chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
-          totallength+="users\n";
+          totallength+="users"+newLine;
           for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
           {
-            totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
-            totallength+=chatRoomList.get(i).clientList.get(j).getIP()+"\n";
+            totallength+=chatRoomList.get(i).clientList.get(j).getName()+newLine;
+            totallength+=chatRoomList.get(i).clientList.get(j).getIP()+newLine;
           }
-          totallength+="!EOUC\n";
+          totallength+="!EOUC"+newLine;
           break;
         }
       }
@@ -138,18 +139,18 @@ class WebServer
       {
         System.out.println("New room created with name " + requestMessageLine + " by " + username);
         chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
-        totallength="newroom\n";
+        totallength="newroom"+newLine;
       }
-      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
-      outToClient.writeBytes ("\r\n");
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+      outToClient.writeBytes ("Content-Length: " + totallength.length()+newLine);
+      outToClient.writeBytes (newLine);
       outToClient.writeBytes (totallength);
       }
       else
       {
-         outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-         outToClient.writeBytes ("Content-Length: " + 8 + "\r\n");
-         outToClient.writeBytes("invalid\n");
+         outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+         outToClient.writeBytes ("Content-Length: " + 8 + newLine);
+         outToClient.writeBytes("invalid"+newLine);
       }
       
             
@@ -165,9 +166,9 @@ class WebServer
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
      
-     outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + numOfBytes + "\r\n");
-      outToClient.writeBytes ("\r\n");
+     outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+      outToClient.writeBytes ("Content-Length: " + numOfBytes + newLine);
+      outToClient.writeBytes (newLine);
       outToClient.write(fileInBytes, 0, numOfBytes);
       addUsersToPage("/index.html");
      }
@@ -180,9 +181,9 @@ class WebServer
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
      
-      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + numOfBytes + "\r\n");
-      outToClient.writeBytes ("\r\n");
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+      outToClient.writeBytes ("Content-Length: " + numOfBytes + newLine);
+      outToClient.writeBytes (newLine);
       outToClient.write(fileInBytes, 0, numOfBytes);
      
        System.out.println(fileName);

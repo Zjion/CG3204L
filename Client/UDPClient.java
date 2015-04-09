@@ -17,7 +17,7 @@ public class UDPClient {
   DatagramPacket outPkt = null;
   DatagramPacket inPkt = null;
   String userSay = null;
-  Map clientList = new HashMap();
+  Map<String, String> clientList = new HashMap<String, String>();
   int port = 9060;
   //int port = Integer.parseInt(args[1]);
   try {
@@ -39,11 +39,10 @@ public class UDPClient {
   }
   InetAddress addr = InetAddress.getByName(destAddr);
   Scanner input = new Scanner(System.in);
-  //TCPComm serverComm = new TCPComm(destAddr, clientList);
-  //serverComm.start();
+  TCPComm serverComm = new TCPComm(destAddr, clientList);
+  serverComm.start();
   System.out.print("Welcome! Please enter your username: ");
-  String[] username={""}; 
-  username[0] = input.nextLine();
+  String username = input.nextLine();
   System.out.print("Please enter your password: ");
   String password = input.nextLine();
   //Do server syncing and thingamajigging here. If valid:
@@ -63,7 +62,7 @@ clientList.put("192.168.0.111", "c");
   
   System.out.println("Start chatting!"+ newLine);
   //Start listener
-  TalkToMe servingMe = new TalkToMe(peerSock, clientList, 9060, username);
+  TalkToMe servingMe = new TalkToMe(peerSock, clientList);
   servingMe.start();
   //Start sender, connecting to all clients on the list.
   TalkToYou servingYou = new TalkToYou(peerSock, clientList, 9060, username);

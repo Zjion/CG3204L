@@ -4,18 +4,17 @@ import java.net.*;
 
 class TalkToYou extends Thread {
   private Thread t;
-  private static String closeConnection = ".signoff";
+  private static String closeConnection = "close";
   private static String messageError = "Message not sent. Please try again.";
   private static String quit = "has quit!";
   public String user;
   public byte outBuf[];
   public int port;
-  public volatile boolean running = true;
   InetAddress ipAddr;
   public DatagramSocket sock;
-  Map<String, String> sendList;
+  List<Client> sendList;
   
-  TalkToYou(DatagramSocket s, Map<String, String> clientList, int portnumber, String username) {
+  TalkToYou(DatagramSocket s, List<Client> clientList, int portnumber, String username) {
     // create a packet buffer to store data from packets received.
     outBuf = new byte[1000];
     port = portnumber;
@@ -25,66 +24,41 @@ class TalkToYou extends Thread {
   }
   
   public void run() {
-    while(running)
-    {
-      if(TalkToMe.ACK>0)
-      {
-        for(int i=0;i<TalkToMe.ACK;i++)
-        {
-          System.out.println("HAppening.");
-          sendMessage(".ACK");
-        }
-        TalkToMe.ACK = 0;
-      }
     Scanner inputReader = new Scanner(System.in);
-    sendMessage(".notify");
+    System.out.println(user + ": ");
     while( inputReader.hasNextLine() ) {
       String message = inputReader.nextLine();
       //exit from chatRoom
       if (message.equals(closeConnection)) {
+        //if (sendMessage(quit)) {
           try{
-            System.out.println("Terminating connection.");
-            sendMessage(".signoff");
-            System.exit(0);
+            sock.close();
+            System.out.println(message);
             break;
           }
           catch(Exception e) {
             e.printStackTrace();
           }
+       // }
+       // else{
+       //   System.out.println(messageError);
+       //   continue;
+       // }
       }
-      else if(message.equals(".list"))
-      {
-        System.out.println("Users in this chat room:");
-        for(Map.Entry<String, String> key: sendList.entrySet())
-        {
-          System.out.println(key.getValue());
-        }
-      }
-      else if(message.startsWith(".name "))
-      {
-        String newUser[] = message.split(" ", 2);
-        user = newUser[1];
-        System.out.println("Your chatname has been changed."); //May need to update this with server.
-        sendMessage(".notify");
-      }          
-      else
-      {
       sendMessage(message);
-      }
-    }
+      System.out.println(user + ": ");
     }
   }
   
   public boolean sendMessage(String message){
     message = user + ": " + message;
-    //Thus, any message without : in it can be a control message.
     outBuf = message.getBytes();
-    for(Map.Entry<String, String> key: sendList.entrySet())
+    for(int i=0;i<sendList.size();i++)
     {
     //send message to others
     try {
       DatagramPacket outPkt = new DatagramPacket(outBuf,
-    outBuf.length, InetAddress.getByName(key.getKey()), port);
+    outBuf.length, InetAddress.getByName(sendList.get(i).getIP()), port);
       sock.send(outPkt);
     }
     catch(IOException e) {
