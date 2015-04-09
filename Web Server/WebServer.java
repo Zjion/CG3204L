@@ -15,7 +15,6 @@ class WebServer
    Boolean user= false;
    int lineNo = 0;
    List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>(); //Stores all chatrooms created on server.
-   FileIO listOfClients = new FileIO("clientList.txt", "clientListBuffer.txt");
 
    // check if a port number is given as the first command line argument
    // if not argument is given, use port number 80
@@ -71,10 +70,11 @@ class WebServer
    {
      //GET requests form most of the requests to server.
      fileName = tokenizedLine.nextToken();
-  //A GET request for this should check if Client is permitted to receive this file.
+     //A GET request for this should check if Client is permitted to receive this file.
      System.out.println("Socket: " + connectionSocket.getRemoteSocketAddress());
-      ip = connectionSocket.getRemoteSocketAddress().toString().split("\\:")[0].substring(1);
-      System.out.println(ip);
+     ip = connectionSocket.getRemoteSocketAddress().toString().split("\\:")[0].substring(1);
+     System.out.println(ip);
+     
      if(fileName.startsWith("/clientList.txt"))
      {
      File file = new File("clientList.txt");
@@ -83,23 +83,21 @@ class WebServer
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
      
-
-      
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
       requestMessageLine = inFromClient.readLine(); //Password
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
-     if (listOfClients.checkUserPass(username,password))
-     {
-       System.out.println("Yay found!");
-     }      
       
-      if(username.equals("guest") && password.equals("hunter2"))
-      {
+      FileIO listOfClients = new FileIO("clientList.txt", "clientListBuffer.txt");
       //if valid when checked against a file, then: [IF CODE AND FILE READING NOT WRITTEN YET]
+      if (listOfClients.checkUserPass(username,password))
+      {
+        System.out.println("User "+username+" authenticated.");  
+        
         //Here the server should send the list of users.
+        
         String totallength="";
         Client newClient = new Client(username, password, ip); //Valid client, create a object representing it
       for(int i=0;i<chatRoomList.size();i++)
@@ -157,7 +155,7 @@ class WebServer
       {
          outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
          outToClient.writeBytes ("Content-Length: " + 8 + newLine);
-         outToClient.writeBytes("invalid"+newLine);
+         outToClient.writeBytes("invalid password."+newLine);
       }
       
             

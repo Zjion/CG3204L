@@ -39,7 +39,6 @@ public class FileIO
         reader = new BufferedReader(fileScan);
         writer = new BufferedWriter(bufferPrint);
 
-
     }
 
     public static void DeleteEntry(String ipaddress)
@@ -79,6 +78,7 @@ public class FileIO
             directPrint.write("Password:");
             directPrint.write(password);
             directPrint.write(newLine);
+            //CloseFileStream();
         }
         catch(IOException ioe)
         {
@@ -100,14 +100,16 @@ public class FileIO
             index = currentLine.lastIndexOf(':');
             user = currentLine.substring(index+1);
             if ((currentLine = reader.readLine()) == null) break;
+            if (!user.equals(username)) continue;
             //Password:"password"
             index = currentLine.lastIndexOf(':');
             pass = currentLine.substring(index+1);
-            if (user.equals(username) && pass.equals(password))
+            if (pass.equals(password))
             {
               return true;
             }
           }
+          return false;
         }
         catch(IOException ioe)
         {

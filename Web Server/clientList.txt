@@ -1,2 +1,2 @@
 User:guest
-PassWord:hunter2
+Password:hunter2
