@@ -8,16 +8,17 @@ class TCPComm extends Thread{
   Socket socket;
   PrintWriter out;
   BufferedReader in;
-  String username;
+  String[] username;
   String password;
   String inputChatRoom;
   Boolean approved = false;
   Boolean validInput = false;
   Map<String, String> TCPList;
-  public TCPComm(String IP, Map<String, String> clientList)
+  public TCPComm(String IP, Map<String, String> clientList, String[] mainUser)
   {
   try
   {
+  username = mainUser;
   ip = InetAddress.getByName(IP);
   socket = new Socket(ip, 80);
   TCPList = clientList;
@@ -52,12 +53,12 @@ class TCPComm extends Thread{
   {
     System.out.print("Enter username. ");
     Scanner input = new Scanner(System.in);
-    username = input.nextLine();
+    username[0] = input.nextLine();
     System.out.print("Enter password. ");
     password = input.nextLine();
     System.out.println("Connecting to server...");
     out.println("GET /clientList.txt HTTP/1.1");
-    out.println(username);
+    out.println(username[0]);
     out.println(password); //Last send to server should not have newline to prevent unlikely bugs
     try
     {
