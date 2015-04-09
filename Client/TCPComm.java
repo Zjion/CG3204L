@@ -50,8 +50,6 @@ class TCPComm extends Thread{
   
   public void start()
   {
-    while(approved!=true)
-    {
     System.out.print("Enter username. ");
     Scanner input = new Scanner(System.in);
     username = input.nextLine();
@@ -72,6 +70,7 @@ class TCPComm extends Thread{
       if(line.equals("invalid"))
       {
         System.out.println("Invalid username or password.");
+        System.exit(0);
       }
       else
       {
@@ -151,7 +150,6 @@ class TCPComm extends Thread{
     catch (Exception e)
     {
       e.printStackTrace();
-    }
     }
   }
   

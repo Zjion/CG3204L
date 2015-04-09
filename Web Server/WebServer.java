@@ -162,7 +162,6 @@ class WebServer
       }
       
             
-
      }
      
      else if(fileName.startsWith("/index.html"))
@@ -216,7 +215,7 @@ class WebServer
       outToClient.writeBytes("</html>"+newLine);
       System.out.println("Appended stuff.");
       System.out.println("Finished sending files.");
-      //connectionSocket.close();
+      connectionSocket.close();
      }
      
      else if(fileName.startsWith("/submit.html")) //Registration, so some string longer than cf_pass+cf_user+submit.html
@@ -259,6 +258,7 @@ class WebServer
         password = parts[1].substring(8);
        System.out.println("Password: " + password);
        //Should be entered into database.
+       connectionSocket.close();
      }
      
       //Process info here with known user and password for registration. 
@@ -274,34 +274,6 @@ class WebServer
    }
  }
 
- }
- 
- static void addUsersToPage(String filename)
- {
-   BufferedReader br = null;
-   FileReader reader = null;
-   try
-   {
-   System.out.println("Attempting to print");
-   PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename+".temp")));
-   File file = new File(filename); 
-   //reader = new FileReader("src/index.html");
-   br = new BufferedReader(reader);
-   String line;
-   while((line = br.readLine())!=null)
-   {
-     System.out.println(line);
-   }
-   }
-   catch(FileNotFoundException ex)
-   {
-    System.out.println("File not found."); 
-    System.out.println("File was supposed to be: " + filename);
-   }
-   catch(IOException ex)
-   {
-     System.out.println("Unable to write to file.");
-   }
  }
  
 }
