@@ -15,7 +15,7 @@ class WebServer
    Boolean user= false;
    int lineNo = 0;
    List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>(); //Stores all chatrooms created on server.
-   
+   FileIO listOfClients = new FileIO("clientList.txt", "clientListBuffer.txt");
 
    // check if a port number is given as the first command line argument
    // if not argument is given, use port number 80
@@ -82,6 +82,8 @@ class WebServer
      FileInputStream inFile = new FileInputStream ("clientList.txt");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
+     
+
       
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
@@ -89,6 +91,11 @@ class WebServer
       requestMessageLine = inFromClient.readLine(); //Password
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
+     if (listOfClients.checkUserPass(username,password))
+     {
+       System.out.println("Yay found!");
+     }      
+      
       if(username.equals("guest") && password.equals("hunter2"))
       {
       //if valid when checked against a file, then: [IF CODE AND FILE READING NOT WRITTEN YET]
