@@ -39,8 +39,8 @@ public class UDPClient {
   }
   InetAddress addr = InetAddress.getByName(destAddr);
   Scanner input = new Scanner(System.in);
-  TCPComm serverComm = new TCPComm(destAddr, clientList);
-  serverComm.start();
+  //TCPComm serverComm = new TCPComm(destAddr, clientList);
+  //serverComm.start();
   System.out.print("Welcome! Please enter your username: ");
   String username = input.nextLine();
   System.out.print("Please enter your password: ");

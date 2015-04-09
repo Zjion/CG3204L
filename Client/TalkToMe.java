@@ -5,17 +5,24 @@ import java.net.*;
 class TalkToMe extends Thread {
   private Thread t;
   public byte inBuf[];
+  public static int[] ACK = {0};
+  public String[] user;
+  public String[] ipToSend={""};
+  public int portNum;
   public DatagramPacket inPkt;
   public DatagramSocket sock;
   Map<String, String> receiveList;
   
-  TalkToMe(DatagramSocket s, Map<String, String> clientList) {
+  TalkToMe(DatagramSocket s, Map<String, String> clientList, int portNumber, String[] username) {
     // create a packet buffer to store data from packets received.
     inBuf = new byte[1000];
     inPkt = new DatagramPacket(inBuf, inBuf.length);
     sock = s;
+    portNum = portNumber;
+    user = username;
     receiveList = clientList;
   }
+  
   
   public void run() {
     while( !sock.isClosed()) {
@@ -30,6 +37,8 @@ class TalkToMe extends Thread {
       
       String reply = new String(inPkt.getData(), 0, inPkt.getLength());
       String ipReceived = inPkt.getAddress().toString().substring(1);
+      System.out.println(ipReceived);
+      ipToSend[0] = ipReceived;
       String[] partition = reply.split(":", 2);
       if (receiveList.containsKey(ipReceived)) //If it already exists, check if username is the same.
       {
@@ -49,9 +58,14 @@ class TalkToMe extends Thread {
         System.out.println(partition[0] + " has signed off.");
         receiveList.remove(ipReceived);
       }
-      if(!partition[1].equals(" .notify") && !partition[1].equals(" .signoff"))
+      if(!partition[1].equals(" .notify") && !partition[1].equals(" .signoff") && !partition[1].equals(" .ACK"))
       {
       System.out.println(reply);
+      ACK[0]++;
+      }
+      if(partition[1].equals(" .ACK"))
+      {
+        System.out.println("Acknowledged.");
       }
     }
   }
@@ -63,5 +77,7 @@ class TalkToMe extends Thread {
       t = new Thread(this);
       t.start();
     }
+    AckSender ackSend = new AckSender(sock, receiveList, portNum, user, ACK, ipToSend); 
+    ackSend.start();
   }
 }
