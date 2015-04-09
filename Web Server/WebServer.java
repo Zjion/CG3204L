@@ -260,7 +260,7 @@ class WebServer
        System.out.println("Password: " + password);
        
        FileWriter writer = new FileWriter("clientList.txt", true);
-       writert.write("User:");
+       writer.write("User:");
        writer.write(username);
        writer.write("\n");
        writer.write("Password:");
