@@ -155,7 +155,7 @@ class WebServer
       {
          outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
          outToClient.writeBytes ("Content-Length: " + 8 + newLine);
-         outToClient.writeBytes("invalid password."+newLine);
+         outToClient.writeBytes("invalid"+newLine);
       }
       
             
