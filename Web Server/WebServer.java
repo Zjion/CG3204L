@@ -255,10 +255,18 @@ class WebServer
        String[] parts = fileName.split("\\?");
        parts = parts[1].split("\\&");
        username = parts[0].substring(8);
-        System.out.println("Username: " + username);
-        password = parts[1].substring(8);
+       System.out.println("Username: " + username);
+       password = parts[1].substring(8);
        System.out.println("Password: " + password);
-       //Should be entered into database.
+       
+       FileWriter writer = new FileWriter("clientList.txt", true);
+       writert.write("User:");
+       writer.write(username);
+       writer.write("\n");
+       writer.write("Password:");
+       writer.write(password);
+       writer.write("\n");
+       writer.close();
      }
      
       //Process info here with known user and password for registration. 
