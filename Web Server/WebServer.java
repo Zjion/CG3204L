@@ -123,9 +123,15 @@ class WebServer
       outToClient.writeBytes (newLine);
       //outToClient.write(fileInBytes, 0, numOfBytes);
       outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
-      
+      try
+      {
       requestMessageLine = inFromClient.readLine(); //HTTP request
       requestMessageLine = inFromClient.readLine(); //This is the chat room from the client.
+      }
+      catch(IOException e)
+      {
+        System.out.println("User has disconnected before entering a chat room: Not logged.");
+      }
       Boolean foundRoom = false;
       totallength = ""; //Reset the string
       for(int i=0;i<chatRoomList.size();i++)
@@ -168,6 +174,7 @@ class WebServer
         catch(IOException e) //Any disconnect indicate signing off.
         {
           chatRoomList.get(chatIndex).removeClient(newClient);
+          System.out.println(newClient.getName() + " has been removed from room " + chatRoomList.get(chatIndex).name);
           System.out.println(newClient.getName() + " has signed off.");
           break;
         }

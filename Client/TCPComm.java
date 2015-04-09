@@ -79,19 +79,26 @@ class TCPComm extends Thread{
         System.out.println("List of chat rooms: ");
     while((line = in.readLine())!=null) //Processing list of users.
         {
+      if(!line.equals("!EOC"))
+      {
           System.out.println(line);
-          
+      }   
           if(line.equals("!EOC"))
           {
+            System.out.println("--End of Chat Room List--");
             break;
           }
         }
     System.out.println("List of users: ");
     while((line = in.readLine())!=null)
     {
+      if(!line.equals("!EOU"))
+      {
       System.out.println(line);
+      }
       if(line.equals("!EOU"))
       {
+        System.out.println("--End of User List--");
         break;
       }
     }
