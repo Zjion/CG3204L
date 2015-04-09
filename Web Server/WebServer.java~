@@ -15,7 +15,8 @@ class WebServer
    Boolean user= false;
    int lineNo = 0;
    List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>(); //Stores all chatrooms created on server.
-
+   int totalUsers = 0;
+   
    // check if a port number is given as the first command line argument
    // if not argument is given, use port number 80
    int myPort = 80;
@@ -162,7 +163,6 @@ class WebServer
       }
       
             
-
      }
      
      else if(fileName.startsWith("/index.html"))
@@ -190,6 +190,7 @@ class WebServer
         activeUsers+=chatRoomList.get(i).clientList.size();
       }
       String activeU = ("Active users: "+activeUsers+newLine);
+      String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
       long lengthContent = activeU.length() + file.length() + 9;
       System.out.println("Length is: " + lengthContent);
@@ -213,10 +214,11 @@ class WebServer
       */
       //outToClient.write(fileInBytes, 0, numOfBytes);
       outToClient.writeBytes(activeU);
+      outToClient.writeBytes(totalU);
       outToClient.writeBytes("</html>"+newLine);
       System.out.println("Appended stuff.");
       System.out.println("Finished sending files.");
-      //connectionSocket.close();
+      connectionSocket.close();
      }
      
      else if(fileName.startsWith("/submit.html")) //Registration, so some string longer than cf_pass+cf_user+submit.html
@@ -255,10 +257,20 @@ class WebServer
        String[] parts = fileName.split("\\?");
        parts = parts[1].split("\\&");
        username = parts[0].substring(8);
-        System.out.println("Username: " + username);
-        password = parts[1].substring(8);
+       System.out.println("Username: " + username);
+       password = parts[1].substring(8);
        System.out.println("Password: " + password);
        //Should be entered into database.
+       connectionSocket.close();      
+       FileWriter writer = new FileWriter("clientList.txt", true);
+       writer.write("User:");
+       writer.write(username);
+       writer.write("\n");
+       writer.write("Password:");
+       writer.write(password);
+       writer.write("\n");
+       writer.close();
+       totalUsers++;
      }
      
       //Process info here with known user and password for registration. 
@@ -274,34 +286,6 @@ class WebServer
    }
  }
 
- }
- 
- static void addUsersToPage(String filename)
- {
-   BufferedReader br = null;
-   FileReader reader = null;
-   try
-   {
-   System.out.println("Attempting to print");
-   PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename+".temp")));
-   File file = new File(filename); 
-   //reader = new FileReader("src/index.html");
-   br = new BufferedReader(reader);
-   String line;
-   while((line = br.readLine())!=null)
-   {
-     System.out.println(line);
-   }
-   }
-   catch(FileNotFoundException ex)
-   {
-    System.out.println("File not found."); 
-    System.out.println("File was supposed to be: " + filename);
-   }
-   catch(IOException ex)
-   {
-     System.out.println("Unable to write to file.");
-   }
  }
  
 }
