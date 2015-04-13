@@ -3,50 +3,84 @@ import java.util.*;
 import java.net.*;
 
 class ServerThread extends Thread {
-	String newLine = System.getProperty("line.separator");
-	String username;
-	String password;
-	String ip;
-	String requestMessageLine="";
-	String fileName="";
-	Boolean user = false;
-	int lineNo = 0;
-	List<ChatRoom> chatRoomList;
-	int totalUsers = 0;
-	int myPort = 80;
-	boolean running = true;
-	ServerSocket listenSocket = new ServerSocket(myPort);
-	StringTokenizer tokenizedLine = new StringTokenizer("");
+ private Thread t;
+ String newLine = System.getProperty("line.separator");
+ String username;
+ String password;
+ String ip;
+ String requestMessageLine="";
+ String fileName="";
+ Boolean user = false;
+ int lineNo = 0;
+ List<ChatRoom> chatRoomList;
+ int totalUsers = 0;
+ int myPort = 80;
+ boolean[] threadSignal;
+ boolean running = false;
+ StringTokenizer tokenizedLine = new StringTokenizer("");
+ BufferedReader inFromClient;
+ DataOutputStream outToClient;
+ Socket connectionSocket;
+ 
+ public ServerThread()
+ {
+   super();
+ }
 
-	ServerThread(List<ChatRoom> mainChatRooms)
-	{
-		chatRoomList = mainChatRooms; //Pass the reference to the thread for active updating.
-	}
+ ServerThread(List<ChatRoom> mainChatRooms, boolean[] signal, Socket s)
+ {
+  connectionSocket = s; 
+  threadSignal = signal;
+  chatRoomList = mainChatRooms; //Pass the reference to the thread for active updating.
+  running = true;
+ }
 
-	public void run() {
-		while(running)
-			{
-				for(;;)
-   {
+ 
+ public void testfunc() throws Exception
+ {
+     threadSignal[0]=true;
+      for(;;)
+      {
         // listen (i.e. wait) for connection request
    System.out.println("Starting new loop.");
-   Socket connectionSocket = listenSocket.accept();
    
    // set up the read and write end of the communication socket
-   BufferedReader inFromClient = new BufferedReader (
+   try
+   {
+   inFromClient = new BufferedReader (
                  new InputStreamReader(connectionSocket.getInputStream()));
-   DataOutputStream outToClient = new DataOutputStream (
+   outToClient = new DataOutputStream (
                  connectionSocket.getOutputStream());
-   ServerThread newthread = new ServerThread(mainChatRooms);
-   newthread.start();
+   }
+   catch(IOException e)
+   {
+     System.out.println("Can't create input/output streams.");
+       e.printStackTrace();
+   }
    System.out.println ("Web server waiting for request on port " + myPort);
       // retrieve first line of request and set up for parsing
+   try
+   {
    requestMessageLine = inFromClient.readLine();
+   }
+   catch(Exception e)
+   {
+     e.printStackTrace();
+     return;
+   }
    System.out.println ("Request: " + requestMessageLine);
 
    while(requestMessageLine!=null && !requestMessageLine.startsWith("GET ")) //catch null error
    {
+     try
+     {
      requestMessageLine = inFromClient.readLine();
+     }
+        catch(Exception e)
+   {
+     e.printStackTrace();
+     return;
+   }
      System.out.println("requestMessageLine: "+ requestMessageLine);
      //GET requests are the only ones going to the server, so cut out errors.
    }
@@ -69,8 +103,12 @@ class ServerThread extends Thread {
      {
      File file = new File("clientList.txt");
      int numOfBytes = (int) file.length();
-     FileInputStream inFile = new FileInputStream ("clientList.txt");
+     FileInputStream inFile;
+
+     inFile = new FileInputStream ("clientList.txt");
+ 
      byte[] fileInBytes = new byte[numOfBytes];
+     
      inFile.read(fileInBytes);
      int chatIndex = 0;
      requestMessageLine = inFromClient.readLine(); //User.
@@ -125,6 +163,7 @@ class ServerThread extends Thread {
           foundRoom = true;
           chatIndex = i;
           chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
+          System.out.println("User has joined existing room " + chatRoomList.get(i).name);
           totallength+="users"+newLine;
           for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
           {
@@ -132,6 +171,7 @@ class ServerThread extends Thread {
             totallength+=chatRoomList.get(i).clientList.get(j).getIP()+newLine;
           }
           totallength+="!EOUC"+newLine;
+          System.out.println(totallength);
           break;
         }
       }
@@ -295,16 +335,29 @@ class ServerThread extends Thread {
      }
    }
  }
-			}
-	}
+ }
 
+ public void run() {
+  while(running)
+   {
+    try
+    {
+    testfunc();
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+   }
+ }
 
-	public void start() {
-		System.out.println("New server thread started.");
-		if(t == null)
-			{
-				t = new Thread(this);
-				t.start();
-			}
-	}
-	
+ public void start() {
+  System.out.println("New server thread started.");
+  if(t == null)
+   {
+    t = new Thread(this);
+    t.start();
+   }
+ }
+ 
+}

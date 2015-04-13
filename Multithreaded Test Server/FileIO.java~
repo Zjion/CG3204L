@@ -90,10 +90,6 @@ public class FileIO
     {
         try
         {
-          userFile = new File(fileName);
-          fileScan = new FileReader(userFile);
-          reader = new BufferedReader(fileScan);
-          //open file
           String currentLine;
           int index;
           String user;
@@ -103,22 +99,16 @@ public class FileIO
             //User:"username"
             index = currentLine.lastIndexOf(':');
             user = currentLine.substring(index+1);
-            if (user.equals(username)) 
-            {
-              reader.close();
-              return false;
-            }
             if ((currentLine = reader.readLine()) == null) break;
+            if (!user.equals(username)) continue;
             //Password:"password"
             index = currentLine.lastIndexOf(':');
             pass = currentLine.substring(index+1);
             if (pass.equals(password))
             {
-              reader.close();
               return true;
             }
           }
-          reader.close();
           return false;
         }
         catch(IOException ioe)
@@ -127,36 +117,6 @@ public class FileIO
         }
         return false;
     }
-    
-    public static int retrieveClients()
-    {
-      int count = 0;
-      String first = "";
-      String second = "";
-      String currentLine;
-      try
-      {
-        userFile = new File(fileName);
-        fileScan = new FileReader(userFile);
-        reader = new BufferedReader(fileScan);
-        while ((first = reader.readLine()) != null)
-        {
-          if((second = reader.readLine()) == null) break;
-          if(first.startsWith("User:") && second.startsWith("Password:")) 
-          {
-            count++;
-          }
-          else return count;
-        }
-        return count;
-      }
-      catch(IOException ioe)
-      {
-        ioe.printStackTrace();
-      }      
-      return count;
-    }
-    
     public static void CloseFileStream() throws IOException
     {
         writer.close();
