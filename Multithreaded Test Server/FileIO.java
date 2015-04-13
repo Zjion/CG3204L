@@ -103,10 +103,9 @@ public class FileIO
             //User:"username"
             index = currentLine.lastIndexOf(':');
             user = currentLine.substring(index+1);
-            if (user.equals(username)) 
+            if (!user.equals(username)) 
             {
-              reader.close();
-              return false;
+              continue;
             }
             if ((currentLine = reader.readLine()) == null) break;
             //Password:"password"
