@@ -272,6 +272,7 @@ class ServerThread extends Thread {
       System.out.println("Finished sending files.");
       running = false;
       connectionSocket.close();
+      break;
      }
      
      else if(fileName.startsWith("/submit.html")) //Registration, so some string longer than cf_pass+cf_user+submit.html
@@ -297,29 +298,28 @@ class ServerThread extends Thread {
       System.out.println("Username: " + username);
       password = parts[1].substring(8);
       System.out.println("Password: " + password);
+
       //Should be entered into database if valid user
       boolean result = true;
-      if(!listOfClients.checkUserRegister(username, password))
+      //Should be entered into database.
+      if(!listOfClients.checkUser(username)) //If user doesn't exist
+      {
+        FileWriter writer = new FileWriter("clientList.txt", true);
+        writer.write("User:");
+        writer.write(username);
+        writer.write(newLine);
+        writer.write("Password:");
+        writer.write(password);
+        writer.write(newLine);
+        writer.close();
+      }
+      else
       {
         file = new File("invalid.html");
         fr = new FileReader(file);
         br = new BufferedReader(fr);
         result = false;
-      }
-      else
-      {
-        file = new File("submit.html");
-        fr = new FileReader(file);
-        br = new BufferedReader(fr);
-      
-        FileWriter writer = new FileWriter("clientList.txt", true);
-        writer.write("User:");
-        writer.write(username);
-        writer.write("\n");
-        writer.write("Password:");
-        writer.write(password);
-        writer.write("\n");
-        writer.close();
+        System.out.println("User already exists.");
       }
       totalUsers = listOfClients.retrieveClients();
       String activeU = ("Active users: "+activeUsers+newLine);
@@ -346,6 +346,8 @@ class ServerThread extends Thread {
       }
      
       connectionSocket.close();
+      running = false;
+      break;
      }
      
       //Process info here with known user and password for registration. 

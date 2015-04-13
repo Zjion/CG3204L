@@ -127,9 +127,10 @@ public class FileIO
         return false;
     }
     
-    public boolean checkUserRegister(String username, String password)
+
+    public boolean checkUser(String username)
     {
-        try
+       try
         {
           userFile = new File(fileName);
           fileScan = new FileReader(userFile);
@@ -138,21 +139,16 @@ public class FileIO
           String currentLine;
           int index;
           String user;
-          String pass;
           while ((currentLine = reader.readLine()) != null)
           {
             //User:"username"
-            user = currentLine.substring(currentLine.lastIndexOf(':')+1);
-            System.out.println(user);
-            if (user.equals(username)) 
+            index = currentLine.lastIndexOf(':');
+            user = currentLine.substring(index+1);
+            if (!user.equals(username)) 
             {
-              reader.close();
-              return false;
+              continue;
             }
-            if ((currentLine = reader.readLine()) == null) break;
-            //Password:"password"
-            pass = currentLine.substring(currentLine.lastIndexOf(':')+1);
-            if (pass.equals(password))
+            if(user.equals(username))
             {
               reader.close();
               return true;
@@ -167,6 +163,7 @@ public class FileIO
         }
         return false;
     }
+    
     public static int retrieveClients()
     {
       int count = 0;

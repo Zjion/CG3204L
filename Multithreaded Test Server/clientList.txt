@@ -4,7 +4,9 @@ User:newuser
 Password:oldpassword
 User:test
 Password:test
-User:test
-Password:test
 User:guohao
 Password:slugging
+User:anotherguy
+Password:test
+User:anotherguy2
+Password:test

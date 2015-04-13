@@ -184,9 +184,9 @@ class ServerThread extends Thread {
         chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
         totallength="newroom"+newLine;
       }
-      //outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
-      //outToClient.writeBytes ("Content-Length: " + totallength.length()+newLine);
-      //outToClient.writeBytes (newLine);
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+      outToClient.writeBytes ("Content-Length: " + totallength.length()+newLine);
+      outToClient.writeBytes (newLine);
       outToClient.writeBytes (totallength);
       
       //Wait for client to send back DC signal
