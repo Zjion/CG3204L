@@ -304,6 +304,9 @@ class ServerThread extends Thread {
       //Should be entered into database.
       if(!listOfClients.checkUser(username)) //If user doesn't exist
       {
+        file = new File("submit.html");
+        fr = new FileReader(file);
+        br = new BufferedReader(fr);
         FileWriter writer = new FileWriter("clientList.txt", true);
         writer.write("User:");
         writer.write(username);
