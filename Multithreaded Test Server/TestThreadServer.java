@@ -12,7 +12,7 @@ public class TestThreadServer
  int totalusers = 0;
  boolean[] signal={true};
  boolean serverRunning = true;
- ServerSocket welcomeSocket = new ServerSocket(80);
+ ServerSocket welcomeSocket = new ServerSocket(9000);
 
  
  while(serverRunning)

@@ -86,7 +86,7 @@ public class FileIO
         }
     }
     
-    public static boolean checkUserPass(String username, String password)
+    public boolean checkUserPass(String username, String password)
     {
         try
         {
@@ -127,6 +127,46 @@ public class FileIO
         return false;
     }
     
+    public boolean checkUserRegister(String username, String password)
+    {
+        try
+        {
+          userFile = new File(fileName);
+          fileScan = new FileReader(userFile);
+          reader = new BufferedReader(fileScan);
+          //open file
+          String currentLine;
+          int index;
+          String user;
+          String pass;
+          while ((currentLine = reader.readLine()) != null)
+          {
+            //User:"username"
+            user = currentLine.substring(currentLine.lastIndexOf(':')+1);
+            System.out.println(user);
+            if (user.equals(username)) 
+            {
+              reader.close();
+              return false;
+            }
+            if ((currentLine = reader.readLine()) == null) break;
+            //Password:"password"
+            pass = currentLine.substring(currentLine.lastIndexOf(':')+1);
+            if (pass.equals(password))
+            {
+              reader.close();
+              return true;
+            }
+          }
+          reader.close();
+          return false;
+        }
+        catch(IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+        return false;
+    }
     public static int retrieveClients()
     {
       int count = 0;
