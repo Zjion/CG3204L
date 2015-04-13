@@ -14,8 +14,8 @@ class WebServer
    Boolean user= false;
    int lineNo = 0;
    List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>(); //Stores all chatrooms created on server.
+   int totalUsers = 0;
    
-
    // check if a port number is given as the first command line argument
    // if not argument is given, use port number 80
    int myPort = 80;
@@ -42,38 +42,44 @@ class WebServer
   StringTokenizer tokenizedLine = new StringTokenizer("");
    // listen (i.e. wait) for connection request
    
+   for(;;)
+   {
+        // listen (i.e. wait) for connection request
+   System.out.println("Starting new loop.");
    Socket connectionSocket = listenSocket.accept();
-
+   
    // set up the read and write end of the communication socket
    BufferedReader inFromClient = new BufferedReader (
                  new InputStreamReader(connectionSocket.getInputStream()));
    DataOutputStream outToClient = new DataOutputStream (
                  connectionSocket.getOutputStream());
 
-   // retrieve line of request and set up for parsing
-   for(;;)
-   {
    System.out.println ("Web server waiting for request on port " + myPort);
-   while(!requestMessageLine.startsWith("GET "))
+      // retrieve first line of request and set up for parsing
+   requestMessageLine = inFromClient.readLine();
+   System.out.println ("Request: " + requestMessageLine);
+
+   while(requestMessageLine!=null && !requestMessageLine.startsWith("GET ")) //catch null error
    {
      requestMessageLine = inFromClient.readLine();
      System.out.println("requestMessageLine: "+ requestMessageLine);
      //GET requests are the only ones going to the server, so cut out errors.
    }
-   System.out.println ("Request: " + requestMessageLine);
+
    if(requestMessageLine!=null)
    {
    tokenizedLine = new StringTokenizer(requestMessageLine);
-   }
    
    if (tokenizedLine.nextToken().equals("GET"))
    {
      //GET requests form most of the requests to server.
      fileName = tokenizedLine.nextToken();
-  //A GET request for this should check if Client is permitted to receive this file.
+     System.out.println("Filename requested is : " + fileName);
+     //A GET request for this should check if Client is permitted to receive this file.
      System.out.println("Socket: " + connectionSocket.getRemoteSocketAddress());
-      ip = connectionSocket.getRemoteSocketAddress().toString().split("\\:")[0].substring(1);
-      System.out.println(ip);
+     ip = connectionSocket.getRemoteSocketAddress().toString().split("\\:")[0].substring(1);
+     System.out.println(ip);
+     
      if(fileName.startsWith("/clientList.txt"))
      {
      File file = new File("clientList.txt");
@@ -81,8 +87,6 @@ class WebServer
        FileInputStream inFile = new FileInputStream ("clientList.txt");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
-     BufferedReader reader = new BufferedReader(new FileReader(file));
-     
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
@@ -90,11 +94,12 @@ class WebServer
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
       
-      if (checkUserPass(username, password, reader))
+      FileIO listOfClients = new FileIO("clientList.txt", "clientListBuffer.txt");
+
+      if (listOfClients.checkUserPass(username,password))
       {
-      //if valid when checked against a file, then: 
-        System.out.println("User: "+username+" authenticated");
-        //Here the server should send the list of users.
+        System.out.println("User "+username+" authenticated.");  
+
         String totallength="";
         Client newClient = new Client(username, password, ip); //Valid client, create a object representing it
       for(int i=0;i<chatRoomList.size();i++)
@@ -116,9 +121,15 @@ class WebServer
       outToClient.writeBytes ("\r\n");
       //outToClient.write(fileInBytes, 0, numOfBytes);
       outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
-      
+      try
+      {
       requestMessageLine = inFromClient.readLine(); //HTTP request
       requestMessageLine = inFromClient.readLine(); //This is the chat room from the client.
+      }
+      catch(IOException e)
+      {
+        System.out.println("User has disconnected before entering a chat room: Not logged.");
+      }
       Boolean foundRoom = false;
       totallength = ""; //Reset the string
       for(int i=0;i<chatRoomList.size();i++)
@@ -126,6 +137,7 @@ class WebServer
         if(chatRoomList.get(i).name.equals(requestMessageLine))
         {
           foundRoom = true;
+          chatIndex = i;
           chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
           totallength+="users\n";
           for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
@@ -140,6 +152,7 @@ class WebServer
       if(foundRoom == false)
       {
         System.out.println("New room created with name " + requestMessageLine + " by " + username);
+        chatIndex = chatRoomList.size(); //1 less than actual size after addition
         chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
         totallength="newroom\n";
       }
@@ -147,6 +160,23 @@ class WebServer
       outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
       outToClient.writeBytes ("\r\n");
       outToClient.writeBytes (totallength);
+      
+      //Wait for client to send back DC signal
+      Boolean disconnect = false;
+      while(disconnect!=true)
+      {
+        try
+        {
+        requestMessageLine = inFromClient.readLine();
+        }
+        catch(IOException e) //Any disconnect indicate signing off.
+        {
+          chatRoomList.get(chatIndex).removeClient(newClient);
+          System.out.println(newClient.getName() + " has been removed from room " + chatRoomList.get(chatIndex).name);
+          System.out.println(newClient.getName() + " has signed off.");
+          break;
+        }
+      }
       }
       else
       {
@@ -154,48 +184,117 @@ class WebServer
          outToClient.writeBytes ("Content-Length: " + 8 + "\r\n");
          outToClient.writeBytes("invalid\n");
       }
-      
             
-
      }
      
      else if(fileName.startsWith("/index.html"))
      {
+       System.out.println("index.html was requested.");
+       while(!requestMessageLine.equals(""))
+       {
+              requestMessageLine = inFromClient.readLine();
+              System.out.println("RML: "+ requestMessageLine);
+              //Empty out unnecessary input from browser.
+       }
        // Main page, any server can request.
-       File file = new File(fileName);
+      /* File file = new File("index.html");
      int numOfBytes = (int) file.length();
-     FileInputStream inFile = new FileInputStream (fileName);
+     FileInputStream inFile = new FileInputStream ("index.html");
      byte[] fileInBytes = new byte[numOfBytes];
-     inFile.read(fileInBytes);
+     inFile.read(fileInBytes);*/
      
-     outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + numOfBytes + "\r\n");
-      outToClient.writeBytes ("\r\n");
-      outToClient.write(fileInBytes, 0, numOfBytes);
-      addUsersToPage("/index.html");
+     File file = new File("index.html");
+     FileReader indexFile= new FileReader(file);
+     BufferedReader br = new BufferedReader(indexFile);
+     int activeUsers = 0;
+     for(int i=0;i<chatRoomList.size();i++)
+      {
+        activeUsers+=chatRoomList.get(i).clientList.size();
+      }
+      String activeU = ("Active users: "+activeUsers+newLine);
+      String totalU = ("Total users: "+totalUsers+newLine);
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+      long lengthContent = activeU.length() + totalU.length() + file.length() + 9;
+      System.out.println("Length is: " + lengthContent);
+      outToClient.writeBytes ("Content-Length: " + lengthContent + newLine);
+      outToClient.writeBytes (newLine);
+      String lineRead;
+      while((lineRead = br.readLine()) != null)
+      {
+        outToClient.writeBytes(lineRead + newLine);
+      }
+      /*
+      outToClient.writeBytes("<html>");
+      outToClient.writeBytes("No spaces or special characters.");
+      outToClient.writeBytes("<form action=\"submit.html\" method=\"get\">");
+      outToClient.writeBytes("<input type=\"text\" name=\"cf_name\"><br>");
+      outToClient.writeBytes("Your password<br>");
+      outToClient.writeBytes("<input type=\"text\" name=\"cf_pass\"><br>");
+      outToClient.writeBytes("<input type=\"submit\" value=\"Register\">");
+      outToClient.writeBytes("<input type=\"reset\" value=\"Clear\">");
+      outToClient.writeBytes("</form>");
+      */
+      //outToClient.write(fileInBytes, 0, numOfBytes);
+      outToClient.writeBytes(activeU);
+      outToClient.writeBytes(totalU);
+      outToClient.writeBytes("</html>"+newLine);
+      System.out.println("Appended stuff.");
+      System.out.println("Finished sending files.");
+      connectionSocket.close();
      }
      
      else if(fileName.startsWith("/submit.html")) //Registration, so some string longer than cf_pass+cf_user+submit.html
      {
-       File file = new File("/submit.html");
+     /*  File file = new File("submit.html");
      int numOfBytes = (int) file.length();
-     FileInputStream inFile = new FileInputStream ("/submit.html");
+     FileInputStream inFile = new FileInputStream ("submit.html");
      byte[] fileInBytes = new byte[numOfBytes];
-     inFile.read(fileInBytes);
+     inFile.read(fileInBytes);*/
      
-      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + numOfBytes + "\r\n");
-      outToClient.writeBytes ("\r\n");
-      outToClient.write(fileInBytes, 0, numOfBytes);
-     
+    File file = new File("submit.html");
+     FileReader indexFile= new FileReader(file);
+     BufferedReader br = new BufferedReader(indexFile);
+     int activeUsers = 0;
+     for(int i=0;i<chatRoomList.size();i++)
+      {
+        activeUsers+=chatRoomList.get(i).clientList.size();
+      }
+      String activeU = ("Active users: "+activeUsers+newLine);
+      String totalU = ("Total users: "+totalUsers+newLine);
+      outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
+     long lengthContent = activeU.length() + totalU.length() + file.length() + 9;
+      System.out.println("Length is: " + lengthContent);
+      outToClient.writeBytes ("Content-Length: " + lengthContent + newLine);
+      outToClient.writeBytes (newLine);
+      //outToClient.write(fileInBytes, 0, numOfBytes); //Omit </html> tag here:
+      String lineRead;
+      while((lineRead = br.readLine()) != null)
+      {
+        outToClient.writeBytes(lineRead + newLine);
+      }
+      outToClient.writeBytes(activeU);
+      outToClient.writeBytes(totalU);
+      outToClient.writeBytes("</html>"+newLine);
+      System.out.println("Appended stuff.");
+      System.out.println("Finished sending files.");
        System.out.println(fileName);
        String[] parts = fileName.split("\\?");
        parts = parts[1].split("\\&");
        username = parts[0].substring(8);
-        System.out.println("Username: " + username);
-        password = parts[1].substring(8);
+       System.out.println("Username: " + username);
+       password = parts[1].substring(8);
        System.out.println("Password: " + password);
        //Should be entered into database.
+       connectionSocket.close();      
+       FileWriter writer = new FileWriter("clientList.txt", true);
+       writer.write("User:");
+       writer.write(username);
+       writer.write("\n");
+       writer.write("Password:");
+       writer.write(password);
+       writer.write("\n");
+       writer.close();
+       totalUsers++;
      }
      
       //Process info here with known user and password for registration. 
@@ -209,67 +308,8 @@ class WebServer
       System.out.println ("Bad Request Message");
      }
    }
-
  }
- 
- public static boolean checkUserPass(String username, String password, BufferedReader reader)
-    {
-        try
-        {
-          String currentLine;
-          int index;
-          String user;
-          String pass;
-          while ((currentLine = reader.readLine()) != null)
-          {
-            //User:"username"
-            index = currentLine.lastIndexOf(':');
-            user = currentLine.substring(index+1);
-            if ((currentLine = reader.readLine()) == null) break;
-            if (!user.equals(username)) continue;
-            //Password:"password"
-            index = currentLine.lastIndexOf(':');
-            pass = currentLine.substring(index+1);
-            if (pass.equals(password))
-            {
-              return true;
-            }
-          }
-          return false;
-        }
-        catch(IOException ioe)
-        {
-            ioe.printStackTrace();
-        }
-        return false;
-    }
- 
- static void addUsersToPage(String filename)
- {
-   BufferedReader br = null;
-   FileReader reader = null;
-   try
-   {
-   System.out.println("Attempting to print");
-   PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename+".temp")));
-   File file = new File(filename); 
-   //reader = new FileReader("src/index.html");
-   br = new BufferedReader(reader);
-   String line;
-   while((line = br.readLine())!=null)
-   {
-     System.out.println(line);
-   }
-   }
-   catch(FileNotFoundException ex)
-   {
-    System.out.println("File not found."); 
-    System.out.println("File was supposed to be: " + filename);
-   }
-   catch(IOException ex)
-   {
-     System.out.println("Unable to write to file.");
-   }
+
  }
  
 }

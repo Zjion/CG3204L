@@ -8,23 +8,24 @@ class TCPComm extends Thread{
   Socket socket;
   PrintWriter out;
   BufferedReader in;
-  String username;
+  String[] username;
   String password;
   String inputChatRoom;
   Boolean approved = false;
   Boolean validInput = false;
+  int[] sgn;
   Map<String, String> TCPList;
-  public TCPComm(String IP, Map<String, String> clientList, String user, String pass)
+
+  public TCPComm(String IP, Map<String, String> clientList, String[] mainUser)
   {
   try
   {
-    ip = InetAddress.getByName(IP);
-    socket = new Socket(ip, 9000);
-    TCPList = clientList;
-    out = new PrintWriter(socket.getOutputStream(), true);
-    in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    username = user;
-    password = pass;
+  username = mainUser;
+  ip = InetAddress.getByName(IP);
+  socket = new Socket(ip, 80);
+  TCPList = clientList;
+  out = new PrintWriter(socket.getOutputStream(), true);
+  in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
   }
   catch (Exception e)
   {
@@ -35,29 +36,29 @@ class TCPComm extends Thread{
   public void run()
   {
     while(!socket.isClosed())
-    {
-      try
+    {try
       {
-        while(in.readLine()!=null)
-        {
-          System.out.println("Response: " + in.readLine());
-        }
+      //Any errant output from server.
+      String line = in.readLine();
+      System.out.println(line);
       }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }  
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
     }
   }
   
   public void start()
   {
-    while(approved!=true)
-    {
+    System.out.print("Enter username. ");
     Scanner input = new Scanner(System.in);
+    username[0] = input.nextLine();
+    System.out.print("Enter password. ");
+    password = input.nextLine();
     System.out.println("Connecting to server...");
     out.println("GET /clientList.txt HTTP/1.1");
-    out.println(username);
+    out.println(username[0]);
     out.println(password); //Last send to server should not have newline to prevent unlikely bugs
     try
     {
@@ -70,6 +71,7 @@ class TCPComm extends Thread{
       if(line.equals("invalid"))
       {
         System.out.println("Invalid username or password.");
+        System.exit(0);
       }
       else
       {
@@ -78,19 +80,26 @@ class TCPComm extends Thread{
         System.out.println("List of chat rooms: ");
     while((line = in.readLine())!=null) //Processing list of users.
         {
+      if(!line.equals("!EOC"))
+      {
           System.out.println(line);
-          
+      }   
           if(line.equals("!EOC"))
           {
+            System.out.println("--End of Chat Room List--");
             break;
           }
         }
     System.out.println("List of users: ");
     while((line = in.readLine())!=null)
     {
+      if(!line.equals("!EOU"))
+      {
       System.out.println(line);
+      }
       if(line.equals("!EOU"))
       {
+        System.out.println("--End of User List--");
         break;
       }
     }
@@ -153,7 +162,6 @@ class TCPComm extends Thread{
     catch (Exception e)
     {
       e.printStackTrace();
-    }
     }
   }
   

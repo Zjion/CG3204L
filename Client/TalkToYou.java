@@ -27,7 +27,7 @@ class TalkToYou extends Thread {
   public void run() {
     while(running)
     {
-    Scanner inputReader = new Scanner(System.in);
+    Scanner inputReader = new Scanner(System.in); //Main form of user input to program here.
     sendMessage(".notify");
     while( inputReader.hasNextLine() ) {
       String message = inputReader.nextLine();
@@ -36,7 +36,7 @@ class TalkToYou extends Thread {
           try{
             System.out.println("Terminating connection.");
             sendMessage(".signoff");
-            System.exit(0);
+            System.exit(0); //This will break connection with the server and inform it automatically.
             break;
           }
           catch(Exception e) {
