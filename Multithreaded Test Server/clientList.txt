@@ -2,3 +2,7 @@ User:guest
 Password:hunter2
 User:newuser
 Password:oldpassword
+User:test
+Password:test
+User:test
+Password:test

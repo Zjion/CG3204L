@@ -1,0 +1,18 @@
+import java.io.*;
+import java.net.*;
+
+public class TestThreadServer
+{
+	//Main file. All threads should start from here.
+	String newLine = System.getProperty("line.separator");
+	List<ChatRoom> chatRoomList = new ArrayList<ChatRoom>();
+	int totalusers = 0;
+	int myPort = 80;
+	boolean serverRunning = true;
+
+	//Start first thread
+	//Pass it by reference the list of chat rooms
+	ServerThread firstthread = new ServerThread(chatRoomList);
+	firstthread.start(); //Start the thread and rely on it to start the next when accessed, and so on...
+}
+	
