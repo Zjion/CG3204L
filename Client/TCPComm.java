@@ -21,7 +21,7 @@ class TCPComm extends Thread{
   {
   username = mainUser;
   ip = InetAddress.getByName(IP);
-  socket = new Socket(ip, 80);
+  socket = new Socket(ip, 9000);
   TCPList = clientList;
   out = new PrintWriter(socket.getOutputStream(), true);
   in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
