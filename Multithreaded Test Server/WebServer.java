@@ -80,7 +80,8 @@ class WebServer
      System.out.println("Socket: " + connectionSocket.getRemoteSocketAddress());
      ip = connectionSocket.getRemoteSocketAddress().toString().split("\\:")[0].substring(1);
      System.out.println(ip);
-     
+     FileIO listOfClients = new FileIO("clientList.txt", "clientListBuffer.txt");
+
      if(fileName.startsWith("/clientList.txt"))
      {
      File file = new File("clientList.txt");
@@ -96,8 +97,6 @@ class WebServer
       System.out.println("Password: " + requestMessageLine);
       password = requestMessageLine;
       
-      FileIO listOfClients = new FileIO("clientList.txt", "clientListBuffer.txt");
-
       if (listOfClients.checkUserPass(username,password))
       {
         System.out.println("User "+username+" authenticated.");  
@@ -213,6 +212,7 @@ class WebServer
       {
         activeUsers+=chatRoomList.get(i).clientList.size();
       }
+      totalUsers = listOfClients.retrieveClients();
       String activeU = ("Active users: "+activeUsers+newLine);
       String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
@@ -253,14 +253,33 @@ class WebServer
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);*/
      
-    File file = new File("submit.html");
-     FileReader indexFile= new FileReader(file);
-     BufferedReader br = new BufferedReader(indexFile);
-     int activeUsers = 0;
-     for(int i=0;i<chatRoomList.size();i++)
-      {
-        activeUsers+=chatRoomList.get(i).clientList.size();
-      }
+       File file = new File("submit.html");
+       FileReader indexFile= new FileReader(file);
+       BufferedReader br = new BufferedReader(indexFile);
+       int activeUsers = 0;
+       for(int i=0;i<chatRoomList.size();i++)
+       {
+         activeUsers+=chatRoomList.get(i).clientList.size();
+       }
+       System.out.println(fileName);
+       String[] parts = fileName.split("\\?");
+       parts = parts[1].split("\\&");
+       username = parts[0].substring(8);
+       System.out.println("Username: " + username);
+       password = parts[1].substring(8);
+       System.out.println("Password: " + password);
+       //Should be entered into database.
+       
+       FileWriter writer = new FileWriter("clientList.txt", true);
+       writer.write("User:");
+       writer.write(username);
+       writer.write("\n");
+       writer.write("Password:");
+       writer.write(password);
+       writer.write("\n");
+       writer.close();
+       totalUsers = listOfClients.retrieveClients();
+       
       String activeU = ("Active users: "+activeUsers+newLine);
       String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
@@ -279,24 +298,8 @@ class WebServer
       outToClient.writeBytes("</html>"+newLine);
       System.out.println("Appended stuff.");
       System.out.println("Finished sending files.");
-       System.out.println(fileName);
-       String[] parts = fileName.split("\\?");
-       parts = parts[1].split("\\&");
-       username = parts[0].substring(8);
-       System.out.println("Username: " + username);
-       password = parts[1].substring(8);
-       System.out.println("Password: " + password);
-       //Should be entered into database.
-       connectionSocket.close();      
-       FileWriter writer = new FileWriter("clientList.txt", true);
-       writer.write("User:");
-       writer.write(username);
-       writer.write("\n");
-       writer.write("Password:");
-       writer.write(password);
-       writer.write("\n");
-       writer.close();
-       totalUsers++;
+      connectionSocket.close();  
+      
      }
      
       //Process info here with known user and password for registration. 
