@@ -10,6 +10,7 @@ class WebServer
    String password;
    String ip;
    String requestMessageLine="";
+   String newLine = System.getProperty("line.separator");
    String fileName ="";
    Boolean user= false;
    int lineNo = 0;
@@ -87,6 +88,7 @@ class WebServer
        FileInputStream inFile = new FileInputStream ("clientList.txt");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);
+     
      requestMessageLine = inFromClient.readLine(); //User.
       System.out.println ("User: " + requestMessageLine);
       username = requestMessageLine;
@@ -102,81 +104,82 @@ class WebServer
 
         String totallength="";
         Client newClient = new Client(username, password, ip); //Valid client, create a object representing it
-      for(int i=0;i<chatRoomList.size();i++)
-      {
+        for(int i=0;i<chatRoomList.size();i++)
+        {
         //Calculate size first for HTTP protocol
-        totallength+=chatRoomList.get(i).name + "\n";
-      } //Expand string for names of chat rooms
-      totallength+="!EOC\n";
-      for(int i=0;i<chatRoomList.size();i++)
-      {
-        for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
+          totallength+=chatRoomList.get(i).name + "\n";
+        } //Expand string for names of chat rooms
+        totallength+="!EOC\n";
+        for(int i=0;i<chatRoomList.size();i++)
         {
-          totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
-        }
-      }  //Expand string for names of users
-      totallength+="!EOU\n";
-      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
-      outToClient.writeBytes ("\r\n");
-      //outToClient.write(fileInBytes, 0, numOfBytes);
-      outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
-      try
-      {
-      requestMessageLine = inFromClient.readLine(); //HTTP request
-      requestMessageLine = inFromClient.readLine(); //This is the chat room from the client.
-      }
-      catch(IOException e)
-      {
-        System.out.println("User has disconnected before entering a chat room: Not logged.");
-      }
-      Boolean foundRoom = false;
-      totallength = ""; //Reset the string
-      for(int i=0;i<chatRoomList.size();i++)
-      {
-        if(chatRoomList.get(i).name.equals(requestMessageLine))
-        {
-          foundRoom = true;
-          chatIndex = i;
-          chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
-          totallength+="users\n";
           for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
           {
             totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
-            totallength+=chatRoomList.get(i).clientList.get(j).getIP()+"\n";
           }
-          totallength+="!EOUC\n";
-          break;
-        }
-      }
-      if(foundRoom == false)
-      {
-        System.out.println("New room created with name " + requestMessageLine + " by " + username);
-        chatIndex = chatRoomList.size(); //1 less than actual size after addition
-        chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
-        totallength="newroom\n";
-      }
-      outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
-      outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
-      outToClient.writeBytes ("\r\n");
-      outToClient.writeBytes (totallength);
-      
-      //Wait for client to send back DC signal
-      Boolean disconnect = false;
-      while(disconnect!=true)
-      {
+        }  //Expand string for names of users
+        totallength+="!EOU\n";
+        outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
+        outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
+        outToClient.writeBytes ("\r\n");
+        //outToClient.write(fileInBytes, 0, numOfBytes);
+        outToClient.writeBytes (totallength); //Everything. Strings have max capacity of 2 billion characters, so it should be fine.
         try
         {
-        requestMessageLine = inFromClient.readLine();
+          requestMessageLine = inFromClient.readLine(); //HTTP request
+          requestMessageLine = inFromClient.readLine(); //This is the chat room from the client.
         }
-        catch(IOException e) //Any disconnect indicate signing off.
+        catch(IOException e)
         {
-          chatRoomList.get(chatIndex).removeClient(newClient);
-          System.out.println(newClient.getName() + " has been removed from room " + chatRoomList.get(chatIndex).name);
-          System.out.println(newClient.getName() + " has signed off.");
-          break;
+          System.out.println("User has disconnected before entering a chat room: Not logged.");
         }
-      }
+        Boolean foundRoom = false;
+        totallength = ""; //Reset the string
+        int chatIndex = chatRoomList.size();
+        for(int i=0;i<chatRoomList.size();i++)
+        {
+          if(chatRoomList.get(i).name.equals(requestMessageLine))
+          {
+            foundRoom = true;
+            chatIndex = i;
+            chatRoomList.get(i).addClient(newClient); //Add the new client to chatroom if found.
+            totallength+="users\n";
+            for(int j=0;j<chatRoomList.get(i).clientList.size();j++)
+            {
+              totallength+=chatRoomList.get(i).clientList.get(j).getName()+"\n";
+              totallength+=chatRoomList.get(i).clientList.get(j).getIP()+"\n";
+            }
+            totallength+="!EOUC\n";
+            break;
+          }
+        }
+        if(foundRoom == false)
+        {
+          System.out.println("New room created with name " + requestMessageLine + " by " + username);
+          chatIndex = chatRoomList.size(); //1 less than actual size after addition
+          chatRoomList.add(new ChatRoom(newClient, requestMessageLine)); //If not, create new chatroom with client as founder.
+          totallength="newroom\n";
+        }
+        outToClient.writeBytes("HTTP/1.0 200 Document Follows\r\n");
+        outToClient.writeBytes ("Content-Length: " + totallength.length() + "\r\n");
+        outToClient.writeBytes ("\r\n");
+        outToClient.writeBytes (totallength);
+        
+        //Wait for client to send back DC signal
+        Boolean disconnect = false;
+        while(disconnect!=true)
+        {
+          try
+          {
+            requestMessageLine = inFromClient.readLine();
+          }
+          catch(IOException e) //Any disconnect indicate signing off.
+          {
+            chatRoomList.get(chatIndex).removeClient(newClient);
+            System.out.println(newClient.getName() + " has been removed from room " + chatRoomList.get(chatIndex).name);
+            System.out.println(newClient.getName() + " has signed off.");
+            break;
+          }
+        }
       }
       else
       {
