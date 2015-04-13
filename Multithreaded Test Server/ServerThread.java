@@ -282,9 +282,10 @@ class ServerThread extends Thread {
      FileInputStream inFile = new FileInputStream ("submit.html");
      byte[] fileInBytes = new byte[numOfBytes];
      inFile.read(fileInBytes);*/
-     File file = null;
-     FileReader fr = null;
-     BufferedReader br = null;
+     
+    File file = new File("submit.html");
+     FileReader indexFile= new FileReader(file);
+     BufferedReader br = new BufferedReader(indexFile);
      int activeUsers = 0;
      for(int i=0;i<chatRoomList.size();i++)
      {
@@ -298,7 +299,6 @@ class ServerThread extends Thread {
       System.out.println("Username: " + username);
       password = parts[1].substring(8);
       System.out.println("Password: " + password);
-<<<<<<< HEAD
       //Should be entered into database.
              
       FileWriter writer = new FileWriter("clientList.txt", true);
@@ -315,37 +315,12 @@ class ServerThread extends Thread {
       else
       {
         System.out.println("User already exists.");
-=======
-      //Should be entered into database if valid user
-      boolean result = true;
-      if(!listOfClients.checkUserRegister(username, password))
-      {
-        file = new File("invalid.html");
-        fr = new FileReader(file);
-        br = new BufferedReader(fr);
-        result = false;
-      }
-      else
-      {
-        file = new File("submit.html");
-        fr = new FileReader(file);
-        br = new BufferedReader(fr);
-      
-        FileWriter writer = new FileWriter("clientList.txt", true);
-        writer.write("User:");
-        writer.write(username);
-        writer.write("\n");
-        writer.write("Password:");
-        writer.write(password);
-        writer.write("\n");
-        writer.close();
->>>>>>> 01b42531317f8d9d18cb2ea335023c8de8c82623
       }
       totalUsers = listOfClients.retrieveClients();
       String activeU = ("Active users: "+activeUsers+newLine);
       String totalU = ("Total users: "+totalUsers+newLine);
       outToClient.writeBytes("HTTP/1.0 200 Document Follows"+newLine);
-      long lengthContent = activeU.length() + totalU.length() + file.length() + 9;
+     long lengthContent = activeU.length() + totalU.length() + file.length() + 9;
       System.out.println("Length is: " + lengthContent);
       outToClient.writeBytes ("Content-Length: " + lengthContent + newLine);
       outToClient.writeBytes (newLine);
@@ -359,12 +334,8 @@ class ServerThread extends Thread {
       outToClient.writeBytes(activeU);
       outToClient.writeBytes(totalU);
       outToClient.writeBytes("</html>"+newLine);
-      if (result){
-        System.out.println("Appended stuff.");
-        System.out.println("Finished sending files.");
-      }
-      }
-     
+      System.out.println("Appended stuff.");
+      System.out.println("Finished sending files.");
       connectionSocket.close();
       running = false;
       break;
@@ -381,7 +352,7 @@ class ServerThread extends Thread {
       System.out.println ("Bad Request Message");
      }
    }
- 
+ }
  }
 
  public void run() {
