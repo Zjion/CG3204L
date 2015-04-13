@@ -13,6 +13,7 @@ class TCPComm extends Thread{
   String inputChatRoom;
   Boolean approved = false;
   Boolean validInput = false;
+  Boolean dontStoreNextIP = false;
   int[] sgn;
   Map<String, String> TCPList;
   public TCPComm(String IP, Map<String, String> clientList, String[] mainUser)
@@ -21,7 +22,7 @@ class TCPComm extends Thread{
   {
   username = mainUser;
   ip = InetAddress.getByName(IP);
-  socket = new Socket(ip, 9000);
+  socket = new Socket(ip, 80);
   TCPList = clientList;
   out = new PrintWriter(socket.getOutputStream(), true);
   in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -128,20 +129,34 @@ class TCPComm extends Thread{
             break;
           }
           else
-          {
+          {  
           if(isUser == true)
           {
             System.out.print("User: ");
           System.out.println(line);
+          if(!line.equals(username[0]))
+          {
           storeUser = line;
+          }
+          else
+          {
+            dontStoreNextIP = true;
+          }
             isUser = false;
           }
           else if(isUser == false)
           {
             System.out.print("IP: ");
             System.out.println(line);
+            if(dontStoreNextIP == false)
+            {
             storeIP = line;
             TCPList.put(storeIP, storeUser);
+            }
+            else
+            {
+              dontStoreNextIP = true;
+            }
             isUser = true; //Flipflop them to know which, as these will always be in pairs.
           }
           }
