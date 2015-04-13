@@ -86,7 +86,7 @@ public class FileIO
         }
     }
     
-    public static boolean checkUserPass(String username, String password)
+    public boolean checkUserPass(String username, String password)
     {
         try
         {
@@ -127,6 +127,73 @@ public class FileIO
         return false;
     }
     
+<<<<<<< HEAD
+    public static boolean checkUser(String username)
+    {
+       try
+=======
+    public boolean checkUserRegister(String username, String password)
+    {
+        try
+>>>>>>> 01b42531317f8d9d18cb2ea335023c8de8c82623
+        {
+          userFile = new File(fileName);
+          fileScan = new FileReader(userFile);
+          reader = new BufferedReader(fileScan);
+          //open file
+          String currentLine;
+          int index;
+          String user;
+<<<<<<< HEAD
+          while ((currentLine = reader.readLine()) != null)
+          {
+            //User:"username"
+            index = currentLine.lastIndexOf(':');
+            user = currentLine.substring(index+1);
+            if (!user.equals(username)) 
+            {
+              continue;
+            }
+            if(user.equals(username))
+=======
+          String pass;
+          while ((currentLine = reader.readLine()) != null)
+          {
+            //User:"username"
+            user = currentLine.substring(currentLine.lastIndexOf(':')+1);
+            System.out.println(user);
+            if (user.equals(username)) 
+            {
+              reader.close();
+              return false;
+            }
+            if ((currentLine = reader.readLine()) == null) break;
+            //Password:"password"
+            pass = currentLine.substring(currentLine.lastIndexOf(':')+1);
+            if (pass.equals(password))
+>>>>>>> 01b42531317f8d9d18cb2ea335023c8de8c82623
+            {
+              reader.close();
+              return true;
+            }
+<<<<<<< HEAD
+            if ((currentLine = reader.readLine()) == null) break;
+=======
+>>>>>>> 01b42531317f8d9d18cb2ea335023c8de8c82623
+          }
+          reader.close();
+          return false;
+        }
+        catch(IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+        return false;
+    }
+<<<<<<< HEAD
+    
+=======
+>>>>>>> 01b42531317f8d9d18cb2ea335023c8de8c82623
     public static int retrieveClients()
     {
       int count = 0;
