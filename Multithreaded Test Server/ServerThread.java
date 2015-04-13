@@ -66,7 +66,8 @@ class ServerThread extends Thread {
    catch(Exception e)
    {
      e.printStackTrace();
-     return;
+     running = false;
+     break;
    }
    System.out.println ("Request: " + requestMessageLine);
 
@@ -153,6 +154,8 @@ class ServerThread extends Thread {
       catch(IOException e)
       {
         System.out.println("User has disconnected before entering a chat room: Not logged.");
+        running = false;
+        break;
       }
       Boolean foundRoom = false;
       totallength = ""; //Reset the string
@@ -200,6 +203,7 @@ class ServerThread extends Thread {
           chatRoomList.get(chatIndex).removeClient(newClient);
           System.out.println(newClient.getName() + " has been removed from room " + chatRoomList.get(chatIndex).name);
           System.out.println(newClient.getName() + " has signed off.");
+          running = false;
           break;
         }
       }
@@ -266,6 +270,7 @@ class ServerThread extends Thread {
       outToClient.writeBytes("</html>"+newLine);
       System.out.println("Appended stuff.");
       System.out.println("Finished sending files.");
+      running = false;
       connectionSocket.close();
      }
      
@@ -347,6 +352,15 @@ class ServerThread extends Thread {
     catch(Exception e)
     {
       e.printStackTrace();
+      try
+      {
+      connectionSocket.close();
+      }
+      catch(Exception e2)
+      {
+        e2.printStackTrace();
+      }
+      running = false;
     }
    }
  }
