@@ -115,6 +115,9 @@ class TCPComm extends Thread{
      System.out.println("Joining room " + inputChatRoom);
      out.println("GET /joinRoom HTTP/1.1");
      out.println(inputChatRoom);
+     line=in.readLine(); //HTTP
+     line=in.readLine(); //length
+     line=in.readLine(); //space
       line=in.readLine();
       if(line.equals("users"))
       {

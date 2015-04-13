@@ -37,7 +37,6 @@ class TalkToMe extends Thread {
       
       String reply = new String(inPkt.getData(), 0, inPkt.getLength());
       String ipReceived = inPkt.getAddress().toString().substring(1);
-      System.out.println(ipReceived);
       ipToSend[0] = ipReceived;
       String[] partition = reply.split(":", 2);
       if (receiveList.containsKey(ipReceived)) //If it already exists, check if username is the same.
@@ -65,7 +64,8 @@ class TalkToMe extends Thread {
       }
       if(partition[1].equals(" .ACK"))
       {
-        System.out.println("Acknowledged.");
+        String realName=receiveList.get(ipReceived);
+        System.out.println("Acknowledged by " + realName + " (" + ipReceived + ")");
       }
     }
   }
